@@ -35,7 +35,7 @@ include_directories(
 add_library(spot_chicken_head src/chicken_head.cpp src/math_helper.cpp)
 
 add_executable(spot_chicken_head_node src/chicken_head_node.cpp)
-target_link_libraries(spot_chicken_head_node chicken_head ${catkin_LIBRARIES} ${pinocchio_LIBRARIES})
+target_link_libraries(spot_chicken_head_node spot_chicken_head ${catkin_LIBRARIES} ${pinocchio_LIBRARIES})
 add_dependencies(spot_chicken_head_node ${catkin_EXPORTED_TARGETS})
 add_dependencies(spot_chicken_head ${catkin_EXPORTED_TARGETS})
 

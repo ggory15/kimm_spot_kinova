@@ -20,6 +20,7 @@ And you can easily move the simulation foler. (Type cd $spot_kinova)
 ```
 sudo apt install python3-pip python3-all-dev python3-rospkg
 sudo apt install ros-melodic-desktop-full --fix-missing
+sudo apt install ros-melodic-pinocchio 
 sudo rm /etc/ros/rosdep/sources.list.d/ -R
 sudo -H pip3 install rosdep
 sudo rosdep init

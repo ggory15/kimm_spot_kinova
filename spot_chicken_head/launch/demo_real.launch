@@ -1,13 +1,18 @@
 <launch>
     <param name="urdf_path" type="string" value="$(find spot_gazebo_description)"/>
     <param name="urdf_name" type="string" value="/urdf/spot_kinova_simul.urdf"/>
-     <param name="issimulation" type="bool" value="true"/>
+    <param name="issimulation" type="bool" value="false"/>
 
-    <include file="$(find spot_gazebo)/launch/bringup.launch">
-        <arg name="has_imu"          value="false"/>
-        <arg name="arm"             value="true"/>
-        <arg name="rviz"             value="true"/>
+    <arg name="rviz_ref_frame"         default="odom"/>
+    <arg name="description_file" value="$(find spot_gazebo_description)/urdf/spot_kinova_simul.urdf"/>
+
+    <include file="$(find champ_description)/launch/description.launch">
+            <arg name="description_file" value="$(arg description_file)"/>
     </include>
+
+    <node name="rviz" pkg="rviz" type="rviz"
+          args="-d $(find champ_description)/rviz/urdf_viewer.rviz -f $(arg rviz_ref_frame)"
+          output="screen"/>
 
     <node name="arm_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
         <param name="use_tf_static"     value="true"/>
@@ -17,7 +22,7 @@
 
     <node name="spot_chicken_head" pkg="spot_chicken_head" type="spot_chicken_head_node"/>
     
-    <include file="$(find spot_teleop)/launch/teleop.launch">
+    <!-- <include file="$(find spot_teleop)/launch/teleop.launch">
         <arg name="joy"             value="true"/>
-    </include>
+    </include> -->
 </launch>

@@ -15,8 +15,10 @@ ChickenHead::ChickenHead(const ros::NodeHandle &node_handle,
 {
     // Ros Param
     string urdf_name, urdf_path;
+    
     nh_.getParam("urdf_path", urdf_path);
     nh_.getParam("urdf_name", urdf_name);
+    nh_.getParam("issimulation", issimulation_);
     start_time_ = ros::Time::now();
     
 
@@ -36,11 +38,16 @@ ChickenHead::ChickenHead(const ros::NodeHandle &node_handle,
 
     q_(6) = 1.0;
 
-    joint_state_publisher_ = nh_.advertise<sensor_msgs::JointState>("arm/joint_states", 100);
-    cmd_pose_subscriber_ = nh_.subscribe("base_to_footprint_pose", 1, &ChickenHead::cmdPoseCallback_, this);
+    joint_state_publisher_ = nh_.advertise<sensor_msgs::JointState>("arm/joint_states", 100);    
     joint_state_subscriber_ = nh_.subscribe("joint_states", 1,  &ChickenHead::jointStateCallback_, this);
-    body_state_subscriber_ = nh_.subscribe("odom", 1, &ChickenHead::bodyStateCallback_, this);
-
+    
+    if (issimulation_){
+        body_state_subscriber_ = nh_.subscribe("odom", 1, &ChickenHead::bodyStateCallback_, this);
+        cmd_pose_subscriber_ = nh_.subscribe("base_to_footprint_pose", 1, &ChickenHead::cmdPoseCallback_, this);
+    }
+    else{
+        body_state_subscriber_ = nh_.subscribe("/spot/odometry", 1, &ChickenHead::bodyStateCallback_, this);
+    }
     nh_.getParam("gait/nominal_height", nominal_height_);
 
     loop_timer_ = pnh_.createTimer(ros::Duration(0.001),
@@ -203,16 +210,29 @@ void ChickenHead::jointStateCallback_ (const sensor_msgs::JointState::ConstPtr& 
         q_(i+14) = msg->position[i];
 }
 void ChickenHead::bodyStateCallback_ (const nav_msgs::Odometry::ConstPtr& msg){
-    q_(0) = msg->pose.pose.position.x + x_(0);
-    q_(1) = msg->pose.pose.position.y + x_(1);
-    q_(2) = msg->pose.pose.position.z + x_(2);
-    
-    tf::Quaternion quat2(msg->pose.pose.orientation.x, msg->pose.pose.orientation.y, msg->pose.pose.orientation.z, msg->pose.pose.orientation.w);
-    tf::Quaternion quat_res;
+    if (issimulation_){
+        q_(0) = msg->pose.pose.position.x + x_(0);
+        q_(1) = msg->pose.pose.position.y + x_(1);
+        q_(2) = msg->pose.pose.position.z + x_(2);
+        
+        tf::Quaternion quat2(msg->pose.pose.orientation.x, msg->pose.pose.orientation.y, msg->pose.pose.orientation.z, msg->pose.pose.orientation.w);
+        tf::Quaternion quat_res;
 
-    quat_res = quat2 * quat_;
-    q_(3) = quat_res.getX();
-    q_(4) = quat_res.getY();
-    q_(5) = quat_res.getZ();
-    q_(6) = quat_res.getW();
+        quat_res = quat2 * quat_;
+        q_(3) = quat_res.getX();
+        q_(4) = quat_res.getY();
+        q_(5) = quat_res.getZ();
+        q_(6) = quat_res.getW();
+    }
+    else{
+        q_(0) = msg->pose.pose.position.x;
+        q_(1) = msg->pose.pose.position.y;
+        q_(2) = msg->pose.pose.position.z;
+
+        q_(3) = msg->pose.pose.orientation.x;
+        q_(4) = msg->pose.pose.orientation.y;
+        q_(5) = msg->pose.pose.orientation.z;
+        q_(6) = msg->pose.pose.orientation.w;
+    }
+
 }

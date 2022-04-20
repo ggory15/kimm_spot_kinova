@@ -57,6 +57,8 @@ class ChickenHead
     tf::Quaternion quat_;
     Vector3d x_;
 
+    bool issimulation_;
+
     Vector3d rotate(const Vector3d, const float alpha, const float phi, const float beta);
     void cmdPoseCallback_(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg);
     void controlLoop_(const ros::TimerEvent& event);

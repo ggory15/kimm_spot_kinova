@@ -1,5 +1,14 @@
 <launch>
-  <param name="robot_description" command="$(find xacro)/xacro $(find spot_gazebo_description)/urdf/spot.urdf.xacro --inorder" />
+    <arg name="description_name"           default="robot_description"/>
+    <arg name="description_file"           default="$(find spot_gazebo_description)/urdf/kinova_only.urdf"/>
 
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+    <param name="$(arg description_name)" textfile="$(arg description_file)"/>
+
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
+        <param name="use_tf_static"     value="false"/>
+        <param name="publish_frequency" value="200"/>
+        <param name="ignore_timestamp" value="true"/>
+        <remap from="robot_description" to="$(arg description_name)"/>
+	<remap from="joint_states"     to="arm/joint_states" />
+    </node>
 </launch>

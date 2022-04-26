@@ -76,13 +76,6 @@ catkin_make
 sudo pip3 install pyyaml -U
 ```
 
-### For Mujoco Simulation
-```
-git clone https://github.com/ggory15/kimm_kortex_custum --recursive
-git clone https://github.com/ggory15/kimm_mujoco_ros --recursive
-cd ..
-catkin_make 
-```
 ## Install
 ```
 catkin_make --cmake-args -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.6m -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.6m.so.1.0

@@ -1,0 +1,31 @@
+<launch>   
+  <arg name="kinova_only"              default="true"/>
+  <param name="urdf_path" type="string" value="$(find spot_kinova_description)" />
+  <param name="urdf_name" type="string" value="/urdf/kinova_only.urdf" if="$(arg kinova_only)"/>
+  <param name="urdf_name" type="string" value="/urdf/spot_kinova_simul.urdf" unless="$(arg kinova_only)"/>
+  <param name="kinova_only" type="bool" value="true" if="$(arg kinova_only)"/>
+  <param name="kinova_only" type="bool" value="false" unless="$(arg kinova_only)"/>
+
+  <node name="kimm_spot_kinova_test" pkg="kimm_spot_kinova" args="-keyboard" type="kimm_spot_kinova_test" output="screen">
+  </node>
+
+  <arg if="$(arg kinova_only)"  name="description_file" value="$(find spot_kinova_description)/urdf/kinova_only.urdf"/>
+  <arg unless="$(arg kinova_only)" name="description_file" value="$(find spot_kinova_description)/urdf/spot_kinova_simul.urdf"/>
+  <include file="$(find champ_description)/launch/description.launch">
+      <arg name="description_file" value="$(arg description_file)"/>
+  </include>
+
+  <arg if="$(arg kinova_only)"  name="rviz_ref_frame" value="base_link"/>
+  <arg unless="$(arg kinova_only)" name="rviz_ref_frame" value="odom"/>
+
+  <node name="rviz" pkg="rviz" type="rviz"
+          args="-d $(find spot_viz)/rviz/robot.rviz -f $(arg rviz_ref_frame)"
+    output="screen"/>
+
+  <node name="arm_robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
+        <param name="use_tf_static"     value="false"/>
+        <param name="publish_frequency" value="100"/>
+        <param name="ignore_timestamp" value="true"/>
+        <remap from="joint_states"     to="arm/joint_states" />
+  </node> 
+</launch>

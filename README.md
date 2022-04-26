@@ -26,18 +26,6 @@ sudo -H pip3 install rosdep
 sudo rosdep init
 rosdep update
 ```
-
-### For Gazebo-Ros with Python3
-```
-https://github.com/ros-simulation/gazebo_ros_pkgs -b melodic-devel
-```
-Open (your ws)/src/gazebo_ros_pkgs/gazebo_ros/scripts/spawn_model.py
-
-Then, you should change the first line, as
-```
-#!/usr/bin/env python3
-```
-
 ### For Spot-ros
 ```
 pip3 install bosdyn-client bosdyn-mission bosdyn-api bosdyn-core
@@ -45,14 +33,6 @@ pip3 install empy
 pip3 install cython
 git clone https://github.com/clearpathrobotics/spot_ros/ --recursive
 git clone https://github.com/ros/geometry2 --branch 0.6.5
-cd ..
-catkin_make --cmake-args -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.6m -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.6m.so.1.0
-```
-
-### For Kortex-ros
-```
-sudo apt install ros-melodic-moveit
-git clone https://github.com/Kinovarobotics/ros_kortex -b melodic devel
 cd ..
 catkin_make --cmake-args -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.6m -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.6m.so.1.0
 ```
@@ -65,7 +45,7 @@ sudo apt install ros-melodic-move-base ros-melodic-effort-controllers
 sudo apt install ros-melodic-gmapping ros-melodic-amcl
 sudo apt install ros-melodic-ecl-license
 git clone https://github.com/chvmp/champ --recursive
-git clone https://github.com/chvmp/champ_teleop
+git clone https://github.com/chvmp/champ_teleop --recursive
 cd ..
 rosdep install --from-paths src --ignore-src -r -y
 catkin_make 
@@ -84,7 +64,13 @@ catkin_make --cmake-args -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin
 ## Quick Start
 Open Terminal (Warning: Please, don't use terminel in Vscode.)
 ```
-roslaunch spot_chicken_head demo.launch
+roslaunch kimm_spot_kinova unittest_spot_kinova.launch
+```
+Then, you can see the moving of the spot.
+
+or
+```
+roslaunch kimm_spot_kinova unittest_joy_spot_kinova.launch
 ```
 Then, you can move the spot with PS5 controller.
 

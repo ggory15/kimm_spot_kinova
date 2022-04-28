@@ -61,7 +61,7 @@ sudo pip3 install pyyaml -U
 catkin_make --cmake-args -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.6m -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.6m.so.1.0
 ```
 
-## Quick Start
+## Unittest
 Open Terminal (Warning: Please, don't use terminel in Vscode.)
 ```
 roslaunch kimm_spot_kinova unittest_spot_kinova.launch
@@ -74,3 +74,11 @@ roslaunch kimm_spot_kinova unittest_joy_spot_kinova.launch
 ```
 Then, you can move the spot with PS5 controller.
 
+## QuickStart for Simulation
+Open Terminal (Warning: Please, don't use terminel in Vscode.)
+```
+roslaunch spot_kinova_framework simulation.launch
+```
+Then, type 'h' for home position. or type 'w' for walking position.
+
+You can also move spot with kinova on rviz (press 2D Nav Goal in Rviz)

@@ -1,0 +1,58 @@
+
+<launch>
+
+<arg name="no_static_map" default="true"/>
+<arg name="frame_prefix" default=""/>
+<arg name="robot_name" default=""/>
+
+  <arg name="base_global_planner" default="navfn/NavfnROS"/>
+  <arg name="base_local_planner" default="dwa_local_planner/DWAPlannerROS"/>
+  <!-- <arg name="base_local_planner" default="base_local_planner/TrajectoryPlannerROS"/> -->
+
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <rosparam file="$(find kimm_spot_kinova)/../config/move_base/base_local_planner_holonomic_params.yaml" command="load" />
+    <rosparam file="$(find kimm_spot_kinova)/../config/move_base/move_base_params.yaml" command="load" />
+
+    <!-- observation sources located in costmap_common.yaml -->
+    <rosparam file="$(find kimm_spot_kinova)/../config/move_base/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find kimm_spot_kinova)/../config/move_base/costmap_common_params.yaml" command="load" ns="local_costmap" />
+
+    <!-- local costmap, needs size -->
+    <rosparam file="$(find kimm_spot_kinova)/../config/move_base/local_costmap_params.yaml" command="load" ns="local_costmap" />
+    <param name="local_costmap/width" value="10.0"/>
+    <param name="local_costmap/height" value="10.0"/>
+
+    <!-- global costmap with laser, for odom_navigation_demo -->
+    <rosparam file="$(find kimm_spot_kinova)/../config/move_base/costmap_global_laser.yaml" command="load" ns="global_costmap" if="$(arg no_static_map)"/>
+    <param name="global_costmap/width" value="100.0" if="$(arg no_static_map)"/>
+    <param name="global_costmap/height" value="100.0" if="$(arg no_static_map)"/>
+  </node>
+
+</launch>
+
+<!-- <launch>
+    <arg name="frame_prefix" default=""/>
+    <arg name="robot_name" default=""/>
+    <arg name="no_static_map" default="true"/>
+
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+        <rosparam file="$(find kimm_spot_kinova)/../config/move_base/costmap_common_params.yaml" command="load" ns="global_costmap" />
+        <param name="global_costmap/width" value="100.0" if="$(arg no_static_map)"/>
+        <param name="global_costmap/height" value="100.0" if="$(arg no_static_map)"/>
+
+        <rosparam file="$(find kimm_spot_kinova)/../config/move_base/costmap_common_params.yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find kimm_spot_kinova)/../config/move_base/local_costmap_params.yaml" command="load" />
+        <rosparam file="$(find kimm_spot_kinova)/../config/move_base/global_costmap_params.yaml" command="load" />
+        <rosparam file="$(find kimm_spot_kinova)/../config/move_base/base_local_planner_holonomic_params.yaml" command="load" />
+        <rosparam file="$(find kimm_spot_kinova)/../config/move_base/move_base_params.yaml" command="load" />
+
+        <param name="global_costmap/global_frame"                   value="$(arg frame_prefix)map"/>
+        <param name="global_costmap/robot_base_frame"               value="$(arg frame_prefix)base_footprint"/>
+        <param name="global_costmap/2d_obstacles_layer/scan/topic"  value="$(arg robot_name)scan"/>
+        <param name="global_costmap/3d_obstacles_layer/depth/topic" value="$(arg robot_name)camera/depth/points"/>
+        <param name="local_costmap/global_frame"                    value="$(arg frame_prefix)odom"/>
+        <param name="local_costmap/robot_base_frame"                value="$(arg frame_prefix)base_footprint"/>
+        <param name="local_costmap/2d_obstacles_layer/scan/topic"   value="$(arg robot_name)scan"/>
+        <param name="local_costmap/3d_obstacles_layer/depth/topic"  value="$(arg robot_name)camera/depth/points"/>
+    </node>
+</launch> -->

@@ -37,6 +37,7 @@ find_package(eiquadprog REQUIRED)
 
 catkin_package(
   LIBRARIES ${PROJECT_NAME}
+  INCLUDE_DIRS include
   CATKIN_DEPENDS
     controller_interface
     dynamic_reconfigure

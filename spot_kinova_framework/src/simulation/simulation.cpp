@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     // Robot Wapper
     string group_name;
     n_node.getParam("/robot_group", group_name);    
-    ctrl_ = new RobotController::SpotKinovaWrapper(group_name, true, n_node);
+    ctrl_ = std::make_shared<RobotController::SpotKinovaWrapper>(group_name, true, n_node);
     ctrl_->initialize();
 
     // Ros subscribe
@@ -40,6 +40,12 @@ int main(int argc, char **argv)
     
     body_pose_publisher_ = n_node.advertise<geometry_msgs::Pose>("body_pose", 100);
 
+    // Action Server
+    joint_posture_action_server_ = std::make_unique<JointPostureActionServer>("/spot_kinova_action/joint_posture_control", n_node, ctrl_);
+    se3_action_server_ = std::make_unique<SE3ActionServer>("/spot_kinova_action/se3_control", n_node, ctrl_);
+    walk_action_server_ = std::make_unique<WalkActionServer>("/spot_kinova_action/move_base", n_node, ctrl_);
+    body_posture_action_server_ = std::make_unique<BodyPostureActionServer>("/spot_kinova_action/body_posture_control", n_node, ctrl_);
+
     // Variable Initialize
     time_ = 0.0;
 
@@ -47,8 +53,11 @@ int main(int argc, char **argv)
         keyboard_event();
         ctrl_->kinova_update();
 
-        ctrl_->compute(time_);
-        
+        joint_posture_action_server_->compute(ros::Time::now());
+        se3_action_server_->compute(ros::Time::now());
+        walk_action_server_->compute(ros::Time::now());
+        body_posture_action_server_->compute(ros::Time::now());
+
         publishJointState();
         publishBodyPose();
 
@@ -100,7 +109,7 @@ void bodyStateCallback(const nav_msgs::Odometry::ConstPtr& msg){
     tf::Quaternion quat_res;   
     quat_res = quat2_ * quat1_;
 
-    ctrl_->spot_update(x, quat_res, quat1_);
+    ctrl_->spot_update(x, quat_res, quat1_, quat2_);
 }
 
 void movebaseCallback(const move_base_msgs::MoveBaseActionResult::ConstPtr& msg){
@@ -114,14 +123,25 @@ void keyboard_event(){
         key = getchar();
         int msg = 0;
         switch (key){
-            case 'h': //home
+            case 'h': { //home
                 msg = 0;
-                ctrl_->ctrl_update(msg);
+                spot_kinova_msgs::JointPostureGoal goal;
+                goal.target_joints.position.resize(7);
+                goal.target_joints.position[0] = 0.0;
+                goal.target_joints.position[1] = -40.0 / 180. * M_PI;
+                goal.target_joints.position[2] = 3.14;
+                goal.target_joints.position[3] = -100 / 180. * M_PI;
+                goal.target_joints.position[4] = 0.0;
+                goal.target_joints.position[5] = 60. / 180. * M_PI;
+                goal.target_joints.position[6] = 1.57;
                 
+                goal.duration = 2.0f;
+
                 cout << " " << endl;
                 cout << "Move to Home Posture" << endl;
                 cout << " " << endl;
                 break;
+            }
             case 'w': //home
                 msg = 1;
                 ctrl_->ctrl_update(msg);

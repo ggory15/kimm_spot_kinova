@@ -31,6 +31,7 @@ find_package(catkin REQUIRED COMPONENTS
   roslib
   spot_msgs
   kimm_spot_kinova
+  spot_kinova_msgs
 )
 
 find_package(Boost REQUIRED COMPONENTS system)
@@ -52,6 +53,7 @@ catkin_package(
     realtime_tools
     roscpp
     kimm_spot_kinova
+    spot_kinova_msgs
   DEPENDS system_lib
 )
 link_directories(${Boost_LIBRARY_DIR})
@@ -76,12 +78,23 @@ SET(${PROJECT_NAME}_HEADERS
 
   include/spot_kinova_framework/utilities/cxxopts.hpp
   include/spot_kinova_framework/utilities/kinova_utilities.hpp
+
+  include/spot_kinova_framework/servers/action_server_base.hpp
+  include/spot_kinova_framework/servers/joint_posture_action_server.hpp
+  include/spot_kinova_framework/servers/se3_action_server.hpp
+  include/spot_kinova_framework/servers/walk_action_server.hpp
+  include/spot_kinova_framework/servers/body_posture_action_server.hpp
 )
 
 SET(${PROJECT_NAME}_SOURCES
   src/controller/controller.cpp
 
   src/utilities/kinova_utilities.cpp
+  
+  src/servers/joint_posture_action_server.cpp
+  src/servers/se3_action_server.cpp
+  src/servers/walk_action_server.cpp
+  src/servers/body_posture_action_server.cpp
 )
 
 

@@ -22,6 +22,7 @@
   <depend>spot_msgs</depend>
   <depend>kimm_spot_kinova</depend>
   <depend>eiquadprog</depend>
+  <depend>spot_kinova_msgs</depend>
   
   <exec_depend>message_runtime</exec_depend>
   <exec_depend>rospy</exec_depend>

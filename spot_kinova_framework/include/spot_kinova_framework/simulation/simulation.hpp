@@ -21,10 +21,16 @@
 #include <termios.h>
 #include <unistd.h>
 
+//SpotKinovaAction
+#include <spot_kinova_framework/servers/joint_posture_action_server.hpp>
+#include <spot_kinova_framework/servers/se3_action_server.hpp>
+#include <spot_kinova_framework/servers/walk_action_server.hpp>
+#include <spot_kinova_framework/servers/body_posture_action_server.hpp>
+
 using namespace Eigen;
 
 double time_;
-RobotController::SpotKinovaWrapper * ctrl_;
+std::shared_ptr<RobotController::SpotKinovaWrapper> ctrl_;
 
 ros::Publisher joint_state_publisher_;
 ros::Publisher body_pose_publisher_;
@@ -37,6 +43,11 @@ ros::Subscriber move_base_subscriber_;
 
 Vector3d odom_pos_;
 tf::Quaternion quat1_, quat2_, body_quat_;
+
+std::unique_ptr<JointPostureActionServer> joint_posture_action_server_;
+std::unique_ptr<SE3ActionServer> se3_action_server_;
+std::unique_ptr<WalkActionServer> walk_action_server_;
+std::unique_ptr<BodyPostureActionServer> body_posture_action_server_;
 
 void cmdPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg);
 void bodyStateCallback(const nav_msgs::Odometry::ConstPtr& msg);

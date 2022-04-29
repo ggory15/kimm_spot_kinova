@@ -44,6 +44,8 @@ namespace RobotController{
         state_.v.setZero(25);
         state_.kinova.q.setZero();
         state_.kinova.v.setZero();
+        state_.spot.body_tilted = false;
+        state_.spot.orientation_publish = false;
 
         tsid_ = std::make_shared<InverseDynamicsFormulationAccForce>("tsid", *robot_);
         tsid_->computeProblemData(time_, state_.q, state_.v);
@@ -119,10 +121,6 @@ namespace RobotController{
             state_.kinova.lowlevel_ctrl = false;
             base_->ClearFaults();
         }
-
-        // For move base
-        state_.spot.orientation_publish = false;
-
     }
 
     void SpotKinovaWrapper::kinova_update(){
@@ -148,9 +146,12 @@ namespace RobotController{
             }
         }
         state_.q.segment(7, 7) = state_.kinova.q; 
+        robot_->computeAllTerms(data_, state_.q, state_.v);
+        state_.v.setZero();
+        state_.kinova.H_ee = robot_->position(data_, robot_->model().getJointId("joint_7"));
     }
 
-    void SpotKinovaWrapper::spot_update(Vector3d& x, tf::Quaternion& quat, tf::Quaternion& pose){
+    void SpotKinovaWrapper::spot_update(Vector3d& x, tf::Quaternion& quat, tf::Quaternion& pose, tf::Quaternion& nav){
         for (int i=0; i<3; i++)
             state_.q(i) = x(i);
 
@@ -160,6 +161,7 @@ namespace RobotController{
         state_.q(6) = quat.getW();
 
         state_.spot.orientation = pose;
+        state_.spot.nav = nav;
     }
 
     void SpotKinovaWrapper::compute(const double & time){
@@ -239,7 +241,7 @@ namespace RobotController{
                     std::promise<k_api::Base::ActionEvent> finish_promise;
                     auto finish_future = finish_promise.get_future();
                     auto promise_notification_handle = base_->OnNotificationActionTopic(
-                        create_event_listener_by_promise(finish_promise),
+                        SpotKinovaWrapper::create_event_listener_by_promise(finish_promise),
                         k_api::Common::NotificationOptions()
                     );
 
@@ -331,7 +333,7 @@ namespace RobotController{
                     std::promise<k_api::Base::ActionEvent> finish_promise;
                     auto finish_future = finish_promise.get_future();
                     auto promise_notification_handle = base_->OnNotificationActionTopic(
-                        create_event_listener_by_promise(finish_promise),
+                        SpotKinovaWrapper::create_event_listener_by_promise(finish_promise),
                         k_api::Common::NotificationOptions()
                     );
 
@@ -418,5 +420,165 @@ namespace RobotController{
         mode_change_ = true;
         if (!issimulation_)
             base_->ClearFaults();
+    }
+
+    void SpotKinovaWrapper::init_joint_posture_ctrl(ros::Time time){
+        if (issimulation_){
+            tsid_->removeTask("task-posture");
+            tsid_->removeTask("task-se3");
+            tsid_->addMotionTask(*postureTask_, 1e-5, 0);
+
+            trajPosture_Cubic_->setInitSample(state_.kinova.q);
+            trajPosture_Cubic_->setDuration(state_.kinova.duration);
+            trajPosture_Cubic_->setStartTime(time.toSec());
+            trajPosture_Cubic_->setGoalSample(state_.kinova.q_ref);  
+        }
+        else{
+            control_mode_message_ = new k_api::ActuatorConfig::ControlModeInformation();
+            control_mode_message_->set_control_mode(k_api::ActuatorConfig::ControlMode::POSITION);
+            for (int i=0; i<7; i++)
+                actuator_config_->SetControlMode(*control_mode_message_, i+1);
+            
+            servoingMode_->set_servoing_mode(k_api::Base::ServoingMode::SINGLE_LEVEL_SERVOING);
+            base_->SetServoingMode(*servoingMode_);
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+            action_type_ = new k_api::Base::RequestedActionType();
+            action_type_->set_action_type(k_api::Base::REACH_JOINT_ANGLES);                    
+            auto action_list = base_->ReadAllActions(*action_type_);
+            auto action_handle = k_api::Base::ActionHandle();
+            action_handle.set_identifier(0);
+
+            for (auto action : action_list.action_list()) 
+            {
+                if (action.name() == "NewHome") 
+                {
+                    action_handle = action.handle();
+                }
+            }
+
+            // Connect to notification action topic
+            std::promise<k_api::Base::ActionEvent> finish_promise;
+            auto finish_future = finish_promise.get_future();
+            auto promise_notification_handle = base_->OnNotificationActionTopic(
+                SpotKinovaWrapper::create_event_listener_by_promise(finish_promise),
+                k_api::Common::NotificationOptions()
+            );
+
+            // Execute action
+            base_->ExecuteActionFromReference(action_handle);
+
+            // Wait for future value from promise
+            const auto status = finish_future.wait_for(std::chrono::seconds{20});
+            base_->Unsubscribe(promise_notification_handle);
+
+            if(status != std::future_status::ready)
+            {
+                std::cout << "Timeout on action notification wait" << std::endl;
+            }
+            const auto promise_event = finish_future.get();
+            
+            mode_change_=false;
+        }
+    }
+    void SpotKinovaWrapper::comput_joint_posture_ctrl(ros::Time time){
+        if (issimulation_){
+            trajPosture_Cubic_->setCurrentTime(time.toSec());
+            samplePosture_ = trajPosture_Cubic_->computeNext();
+            postureTask_->setReference(samplePosture_);
+        
+            const HQPData & HQPData = tsid_->computeProblemData(time.toSec(), state_.q, state_.v);       
+            state_.v = tsid_->getAccelerations(solver_->solve(HQPData));
+            state_.kinova.q = pinocchio::integrate(robot_->model(), state_.q, 0.001 * state_.v).segment(7,7);
+        }
+    }
+    
+    void SpotKinovaWrapper::init_se3_ctrl(ros::Time time){
+        if (issimulation_){
+            tsid_->removeTask("task-posture");
+            tsid_->removeTask("task-se3");
+            tsid_->addMotionTask(*postureTask_, 1e-5, 1);
+            tsid_->addMotionTask(*eeTask_, 1, 0);
+
+            state_.kinova.q_ref = state_.kinova.q;
+
+            trajPosture_Cubic_->setInitSample(state_.kinova.q);
+            trajPosture_Cubic_->setDuration(0.1);
+            trajPosture_Cubic_->setStartTime(time.toSec());
+            trajPosture_Cubic_->setGoalSample(state_.kinova.q_ref);   
+
+            trajEE_Cubic_->setStartTime(time.toSec());
+            trajEE_Cubic_->setDuration(state_.kinova.duration);
+            state_.kinova.H_ee_init = state_.kinova.H_ee;
+
+            trajEE_Cubic_->setInitSample(state_.kinova.H_ee);     
+            trajEE_Cubic_->setGoalSample(state_.kinova.H_ee_ref);
+        }
+        else{
+            control_mode_message_ = new k_api::ActuatorConfig::ControlModeInformation();
+            control_mode_message_->set_control_mode(k_api::ActuatorConfig::ControlMode::POSITION);
+            for (int i=0; i<7; i++)
+                actuator_config_->SetControlMode(*control_mode_message_, i+1);
+            
+            servoingMode_->set_servoing_mode(k_api::Base::ServoingMode::SINGLE_LEVEL_SERVOING);
+            base_->SetServoingMode(*servoingMode_);
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+            action_type_ = new k_api::Base::RequestedActionType();
+            action_type_->set_action_type(k_api::Base::REACH_JOINT_ANGLES);                    
+            auto action_list = base_->ReadAllActions(*action_type_);
+            auto action_handle = k_api::Base::ActionHandle();
+            action_handle.set_identifier(0);
+
+            for (auto action : action_list.action_list()) 
+            {
+                if (action.name() == "NewTurnOff") 
+                {
+                    action_handle = action.handle();
+                }
+            }
+
+            // Connect to notification action topic
+            std::promise<k_api::Base::ActionEvent> finish_promise;
+            auto finish_future = finish_promise.get_future();
+            auto promise_notification_handle = base_->OnNotificationActionTopic(
+                SpotKinovaWrapper::create_event_listener_by_promise(finish_promise),
+                k_api::Common::NotificationOptions()
+            );
+
+            // Execute action
+            base_->ExecuteActionFromReference(action_handle);
+
+            // Wait for future value from promise
+            const auto status = finish_future.wait_for(std::chrono::seconds{20});
+            base_->Unsubscribe(promise_notification_handle);
+
+            if(status != std::future_status::ready)
+            {
+                std::cout << "Timeout on action notification wait" << std::endl;
+            }
+            const auto promise_event = finish_future.get();
+        }
+    }
+    void SpotKinovaWrapper::comput_se3_ctrl(ros::Time time){
+        trajPosture_Cubic_->setCurrentTime(time.toSec());
+        samplePosture_ = trajPosture_Cubic_->computeNext();
+        postureTask_->setReference(samplePosture_);
+
+        trajEE_Cubic_->setCurrentTime(time.toSec());
+        sampleEE_ = trajEE_Cubic_->computeNext();
+        eeTask_->setReference(sampleEE_);
+            
+        const HQPData & HQPData = tsid_->computeProblemData(time.toSec(), state_.q, state_.v);       
+        state_.v = tsid_->getAccelerations(solver_->solve(HQPData));
+        state_.kinova.q = pinocchio::integrate(robot_->model(), state_.q, 0.001 * state_.v).segment(7,7);
+    }
+    void SpotKinovaWrapper::init_body_posture_ctrl(ros::Time time){
+        state_.spot.orientation_init = state_.spot.orientation;
+        time_= time.toSec();
+    }
+    void SpotKinovaWrapper::comput_body_posture_ctrl(ros::Time time){
+        double cubic_t = cubic(time.toSec(), time_, time_ + state_.spot.duration, 0.0, 1.0, 0.0, 0.0 );
+        state_.spot.orientation_des = state_.spot.orientation_init.slerp(state_.spot.orientation_ref, cubic_t);
     }
 }

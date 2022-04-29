@@ -1,3 +1,6 @@
+#ifndef __spot_kinova_ctrl__
+#define __spot_kinova_ctrl__
+
 //Pinocchio Header
 #include <pinocchio/fwd.hpp>
 #include <pinocchio/algorithm/joint-configuration.hpp> 
@@ -10,7 +13,6 @@
 #include "sensor_msgs/JointState.h"
 #include "geometry_msgs/Transform.h"
 #include "std_msgs/Int16.h"
-#include "tf/transform_datatypes.h"
 #include "tf/transform_datatypes.h"
 
 //SYSTEM Header
@@ -28,7 +30,7 @@
 #include <kimm_spot_kinova/trajectories/trajectory_euclidian.hpp>
 #include <kimm_spot_kinova/trajectories/trajectory_se3.hpp>
 #include <kimm_spot_kinova/solver/solver_HQP_factory.hxx>
-#include <kimm_spot_kinova/solver/util.hpp>
+//#include <kimm_spot_kinova/solver/util.hpp>
 
 // Real Kinova
 #include <BaseClientRpc.h>
@@ -59,6 +61,8 @@ typedef struct Kinova_State {
     Vector7d v_ref;
     SE3 H_ee_ref;
     SE3 H_ee_init;
+    SE3 H_ee;
+    double duration;
     bool lowlevel_ctrl;
 } kinova_state;
 typedef struct Spot_State {
@@ -66,8 +70,11 @@ typedef struct Spot_State {
     tf::Quaternion orientation;
     tf::Quaternion orientation_ref;
     tf::Quaternion orientation_des;
-    tf::Quaternion orientation_init;
+    tf::Quaternion orientation_init;    // body pose
+    tf::Quaternion nav; // navigation 2d
+    double duration;
     bool orientation_publish;
+    bool body_tilted;
 } spot_state;
 typedef struct State {   
     kinova_state kinova;
@@ -78,40 +85,6 @@ typedef struct State {
     double duration;
 } state;   
 
-std::function<void(k_api::Base::ActionNotification)> 
-    create_event_listener_by_promise(std::promise<k_api::Base::ActionEvent>& finish_promise)
-{
-    return [&finish_promise] (k_api::Base::ActionNotification notification)
-    {
-        const auto action_event = notification.action_event();
-        switch(action_event)
-        {
-        case k_api::Base::ActionEvent::ACTION_END:
-        case k_api::Base::ActionEvent::ACTION_ABORT:
-            finish_promise.set_value(action_event);
-            break;
-        default:
-            break;
-        }
-    };
-}
-std::function<void(k_api::Base::ActionNotification)>
-    create_event_listener_by_ref(k_api::Base::ActionEvent& returnAction)
-{
-    return [&returnAction](k_api::Base::ActionNotification notification)
-    {
-        const auto action_event = notification.action_event();
-        switch(action_event)
-        {
-        case k_api::Base::ActionEvent::ACTION_END:
-        case k_api::Base::ActionEvent::ACTION_ABORT:
-            returnAction = action_event;
-            break;
-        default:
-            break;
-        }
-    };
-}
 
 namespace RobotController{
     class SpotKinovaWrapper{
@@ -122,14 +95,29 @@ namespace RobotController{
             void initialize();
             void ctrl_update(const int& ); 
             void kinova_update(); 
-            void spot_update(Vector3d& x, tf::Quaternion& quat, tf::Quaternion& pose); 
+            void spot_update(Vector3d& x, tf::Quaternion& quat, tf::Quaternion& pose, tf::Quaternion& nav); 
             void compute(const double &); 
+            
+            void init_joint_posture_ctrl(ros::Time time);
+            void comput_joint_posture_ctrl(ros::Time time);
+            void init_se3_ctrl(ros::Time time);
+            void comput_se3_ctrl(ros::Time time);
+            void init_body_posture_ctrl(ros::Time time);
+            void comput_body_posture_ctrl(ros::Time time);
+
 
             int ctrltype(){
                 return ctrl_mode_;
             }
             State & state(){
                 return state_;
+            }
+            bool simulation(){
+                return issimulation_;
+            }
+            void computeAllTerms(){
+                robot_->computeAllTerms(data_, state_.q, state_.v);
+                state_.v.setZero(); 
             }
 
         private:
@@ -178,5 +166,42 @@ namespace RobotController{
             k_api::Base::JointAngles joint_from_kinova_;
             k_api::BaseCyclic::Feedback base_feedback_;
             k_api::BaseCyclic::Command  base_command_;
+
+            std::function<void(k_api::Base::ActionNotification)> 
+            create_event_listener_by_promise(std::promise<k_api::Base::ActionEvent>& finish_promise)
+            {
+                return [&finish_promise] (k_api::Base::ActionNotification notification)
+                {
+                    const auto action_event = notification.action_event();
+                    switch(action_event)
+                    {
+                    case k_api::Base::ActionEvent::ACTION_END:
+                    case k_api::Base::ActionEvent::ACTION_ABORT:
+                        finish_promise.set_value(action_event);
+                        break;
+                    default:
+                        break;
+                    }
+                };
+            }
+            std::function<void(k_api::Base::ActionNotification)>
+                create_event_listener_by_ref(k_api::Base::ActionEvent& returnAction)
+            {
+                return [&returnAction](k_api::Base::ActionNotification notification)
+                {
+                    const auto action_event = notification.action_event();
+                    switch(action_event)
+                    {
+                    case k_api::Base::ActionEvent::ACTION_END:
+                    case k_api::Base::ActionEvent::ACTION_ABORT:
+                        returnAction = action_event;
+                        break;
+                    default:
+                        break;
+                    }
+                };
+            }
+
     };
 }
+#endif

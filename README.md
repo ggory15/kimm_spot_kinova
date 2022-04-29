@@ -79,6 +79,9 @@ Open Terminal (Warning: Please, don't use terminel in Vscode.)
 ```
 roslaunch spot_kinova_framework simulation.launch
 ```
-Then, type 'h' for home position. or type 'w' for walking position.
-
+Open Another Terminal, and go to the "/spot_kinova_framework/python_client/" folder
+```
+python3 simulation.py
+```
+you can type "home", "walk", "reach", and so on.
 You can also move spot with kinova on rviz (press 2D Nav Goal in Rviz)

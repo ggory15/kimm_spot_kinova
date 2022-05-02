@@ -58,7 +58,7 @@ bool SE3ActionServer::compute(ros::Time ctime)
   if (!as_.isActive())
       return false; 
   
-  mu_->comput_se3_ctrl(ctime);
+  mu_->compute_se3_ctrl(ctime);
   
 
   if (ctime.toSec() - start_time_.toSec() > goal_->duration && (mu_->state().kinova.H_ee.translation()-mu_->state().kinova.H_ee_ref.translation()).norm() < 1e-5){

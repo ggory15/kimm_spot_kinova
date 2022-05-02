@@ -44,7 +44,7 @@ bool BodyPostureActionServer::compute(ros::Time ctime)
   if (!as_.isActive())
       return false; 
   
-  mu_->comput_body_posture_ctrl(ctime);
+  mu_->compute_body_posture_ctrl(ctime);
   
   if (ctime.toSec() - start_time_.toSec() > goal_->duration){
     setSucceeded();

@@ -5,7 +5,7 @@ JointPostureActionServer::JointPostureActionServer(std::string name, ros::NodeHa
 {
 	as_.registerGoalCallback(boost::bind(&JointPostureActionServer::goalCallback, this));
 	as_.registerPreemptCallback(boost::bind(&JointPostureActionServer::preemptCallback, this));
-    as_.start();
+  as_.start();
 }
 
 void JointPostureActionServer::goalCallback()
@@ -38,7 +38,7 @@ bool JointPostureActionServer::compute(ros::Time ctime)
   if (!as_.isActive())
       return false; 
   
-  mu_->comput_joint_posture_ctrl(ctime);
+  mu_->compute_joint_posture_ctrl(ctime);
 
   if (ctime.toSec() - start_time_.toSec() > goal_->duration && (mu_->state().kinova.q_ref-mu_->state().kinova.q).norm() < 1e-5){
     setSucceeded();

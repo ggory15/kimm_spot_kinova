@@ -85,6 +85,8 @@ SET(${PROJECT_NAME}_HEADERS
   include/spot_kinova_framework/servers/walk_action_server.hpp
   include/spot_kinova_framework/servers/body_posture_action_server.hpp
   include/spot_kinova_framework/servers/wholebody_action_server.hpp
+
+  include/spot_kinova_framework/servers/predefined_posture_action_server.hpp
 )
 
 SET(${PROJECT_NAME}_SOURCES
@@ -97,6 +99,8 @@ SET(${PROJECT_NAME}_SOURCES
   src/servers/walk_action_server.cpp
   src/servers/body_posture_action_server.cpp
   src/servers/wholebody_action_server.cpp
+
+  src/servers/predefined_posture_action_server.cpp
 )
 
 
@@ -109,10 +113,15 @@ ADD_LIBRARY(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} SYSTEM PUBLIC $<INSTALL_INTERFACE:include> ${EIGEN3_INCLUDE_DIR} ${EXTRA_INC} )
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${kimm_spot_kinova_LIBRARIES} ${EXTRA_LIB} ${pinocchio_LIBRARIES} ${kimm_trajectory_smoother_LIBRARIES} eiquadprog::eiquadprog -lpthread)
 
-# exe for example
+# exe for simulation
 add_executable(${PROJECT_NAME}_simulation src/simulation/simulation.cpp)
 target_link_libraries(${PROJECT_NAME}_simulation ${PROJECT_NAME} ${catkin_LIBRARIES} -lpthread)
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}_simulation SYSTEM PUBLIC $<INSTALL_INTERFACE:include>)
+
+# exe for real
+add_executable(${PROJECT_NAME}_real src/real/real.cpp)
+target_link_libraries(${PROJECT_NAME}_real ${PROJECT_NAME} ${catkin_LIBRARIES} -lpthread)
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}_real SYSTEM PUBLIC $<INSTALL_INTERFACE:include>)
 
 #############
 ## Install ##

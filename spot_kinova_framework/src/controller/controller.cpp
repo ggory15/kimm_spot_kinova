@@ -434,62 +434,52 @@ namespace RobotController{
             trajPosture_Cubic_->setGoalSample(state_.kinova.q_ref);  
         }
         else{
+            base_->ClearFaults();
+
+            servoingMode_->set_servoing_mode(k_api::Base::ServoingMode::LOW_LEVEL_SERVOING);
+            base_->SetServoingMode(*servoingMode_);
+            base_feedback_ = base_cyclic_->RefreshFeedback();
+            base_command_.clear_actuators();
+            for(int i = 0; i < 7; i++)
+            {
+                base_command_.add_actuators()->set_position(base_feedback_.actuators(i).position());
+            }
+            base_feedback_ = base_cyclic_->Refresh(base_command_);
             control_mode_message_ = new k_api::ActuatorConfig::ControlModeInformation();
-            control_mode_message_->set_control_mode(k_api::ActuatorConfig::ControlMode::POSITION);
+            control_mode_message_->set_control_mode(k_api::ActuatorConfig::ControlMode::VELOCITY);
+
             for (int i=0; i<7; i++)
                 actuator_config_->SetControlMode(*control_mode_message_, i+1);
-            
-            servoingMode_->set_servoing_mode(k_api::Base::ServoingMode::SINGLE_LEVEL_SERVOING);
-            base_->SetServoingMode(*servoingMode_);
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
-            action_type_ = new k_api::Base::RequestedActionType();
-            action_type_->set_action_type(k_api::Base::REACH_JOINT_ANGLES);                    
-            auto action_list = base_->ReadAllActions(*action_type_);
-            auto action_handle = k_api::Base::ActionHandle();
-            action_handle.set_identifier(0);
-
-            for (auto action : action_list.action_list()) 
-            {
-                if (action.name() == "NewHome") 
-                {
-                    action_handle = action.handle();
-                }
-            }
-
-            // Connect to notification action topic
-            std::promise<k_api::Base::ActionEvent> finish_promise;
-            auto finish_future = finish_promise.get_future();
-            auto promise_notification_handle = base_->OnNotificationActionTopic(
-                SpotKinovaWrapper::create_event_listener_by_promise(finish_promise),
-                k_api::Common::NotificationOptions()
-            );
-
-            // Execute action
-            base_->ExecuteActionFromReference(action_handle);
-
-            // Wait for future value from promise
-            const auto status = finish_future.wait_for(std::chrono::seconds{20});
-            base_->Unsubscribe(promise_notification_handle);
-
-            if(status != std::future_status::ready)
-            {
-                std::cout << "Timeout on action notification wait" << std::endl;
-            }
-            const auto promise_event = finish_future.get();
-            
-            mode_change_=false;
         }
     }
-    void SpotKinovaWrapper::comput_joint_posture_ctrl(ros::Time time){
-        if (issimulation_){
-            trajPosture_Cubic_->setCurrentTime(time.toSec());
-            samplePosture_ = trajPosture_Cubic_->computeNext();
-            postureTask_->setReference(samplePosture_);
+    void SpotKinovaWrapper::compute_joint_posture_ctrl(ros::Time time){
+        trajPosture_Cubic_->setCurrentTime(time.toSec());
+        samplePosture_ = trajPosture_Cubic_->computeNext();
+        postureTask_->setReference(samplePosture_);
+    
+        const HQPData & HQPData = tsid_->computeProblemData(time.toSec(), state_.q, state_.v);       
+        state_.v = tsid_->getAccelerations(solver_->solve(HQPData));
         
-            const HQPData & HQPData = tsid_->computeProblemData(time.toSec(), state_.q, state_.v);       
-            state_.v = tsid_->getAccelerations(solver_->solve(HQPData));
+        if (issimulation_){            
             state_.kinova.q = pinocchio::integrate(robot_->model(), state_.q, 0.001 * state_.v).segment(7,7);
+        }
+        else{
+            for(int i = 0; i < 7; i++)
+            {
+                base_command_.mutable_actuators(i)->set_position(base_feedback_.actuators(i).position());
+                base_command_.mutable_actuators(i)->set_velocity(state_.v(i+6) *180.0 / M_PI);        		    
+            }
+            
+            base_command_.set_frame_id(base_command_.frame_id() + 1);
+            if (base_command_.frame_id() > 65535)
+                base_command_.set_frame_id(0);
+
+            for (int idx = 0; idx < 7; idx++)
+            {
+                base_command_.mutable_actuators(idx)->set_command_id(base_command_.frame_id());
+            }
+
+            base_feedback_ = base_cyclic_->Refresh(base_command_, 0);
         }
     }
     
@@ -515,52 +505,25 @@ namespace RobotController{
             trajEE_Cubic_->setGoalSample(state_.kinova.H_ee_ref);
         }
         else{
+            base_->ClearFaults();
+
+            servoingMode_->set_servoing_mode(k_api::Base::ServoingMode::LOW_LEVEL_SERVOING);
+            base_->SetServoingMode(*servoingMode_);
+            base_feedback_ = base_cyclic_->RefreshFeedback();
+            base_command_.clear_actuators();
+            for(int i = 0; i < 7; i++)
+            {
+                base_command_.add_actuators()->set_position(base_feedback_.actuators(i).position());
+            }
+            base_feedback_ = base_cyclic_->Refresh(base_command_);
             control_mode_message_ = new k_api::ActuatorConfig::ControlModeInformation();
-            control_mode_message_->set_control_mode(k_api::ActuatorConfig::ControlMode::POSITION);
+            control_mode_message_->set_control_mode(k_api::ActuatorConfig::ControlMode::VELOCITY);
+
             for (int i=0; i<7; i++)
                 actuator_config_->SetControlMode(*control_mode_message_, i+1);
-            
-            servoingMode_->set_servoing_mode(k_api::Base::ServoingMode::SINGLE_LEVEL_SERVOING);
-            base_->SetServoingMode(*servoingMode_);
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
-            action_type_ = new k_api::Base::RequestedActionType();
-            action_type_->set_action_type(k_api::Base::REACH_JOINT_ANGLES);                    
-            auto action_list = base_->ReadAllActions(*action_type_);
-            auto action_handle = k_api::Base::ActionHandle();
-            action_handle.set_identifier(0);
-
-            for (auto action : action_list.action_list()) 
-            {
-                if (action.name() == "NewTurnOff") 
-                {
-                    action_handle = action.handle();
-                }
-            }
-
-            // Connect to notification action topic
-            std::promise<k_api::Base::ActionEvent> finish_promise;
-            auto finish_future = finish_promise.get_future();
-            auto promise_notification_handle = base_->OnNotificationActionTopic(
-                SpotKinovaWrapper::create_event_listener_by_promise(finish_promise),
-                k_api::Common::NotificationOptions()
-            );
-
-            // Execute action
-            base_->ExecuteActionFromReference(action_handle);
-
-            // Wait for future value from promise
-            const auto status = finish_future.wait_for(std::chrono::seconds{20});
-            base_->Unsubscribe(promise_notification_handle);
-
-            if(status != std::future_status::ready)
-            {
-                std::cout << "Timeout on action notification wait" << std::endl;
-            }
-            const auto promise_event = finish_future.get();
         }
     }
-    void SpotKinovaWrapper::comput_se3_ctrl(ros::Time time){
+    void SpotKinovaWrapper::compute_se3_ctrl(ros::Time time){
         trajPosture_Cubic_->setCurrentTime(time.toSec());
         samplePosture_ = trajPosture_Cubic_->computeNext();
         postureTask_->setReference(samplePosture_);
@@ -571,14 +534,83 @@ namespace RobotController{
             
         const HQPData & HQPData = tsid_->computeProblemData(time.toSec(), state_.q, state_.v);       
         state_.v = tsid_->getAccelerations(solver_->solve(HQPData));
-        state_.kinova.q = pinocchio::integrate(robot_->model(), state_.q, 0.001 * state_.v).segment(7,7);
+        
+        if (issimulation_)
+            state_.kinova.q = pinocchio::integrate(robot_->model(), state_.q, 0.001 * state_.v).segment(7,7);
+        else{
+            for(int i = 0; i < 7; i++)
+            {
+                base_command_.mutable_actuators(i)->set_position(base_feedback_.actuators(i).position());
+                base_command_.mutable_actuators(i)->set_velocity(state_.v(i+6) *180.0 / M_PI);        		    
+            }
+            
+            base_command_.set_frame_id(base_command_.frame_id() + 1);
+            if (base_command_.frame_id() > 65535)
+                base_command_.set_frame_id(0);
+
+            for (int idx = 0; idx < 7; idx++)
+            {
+                base_command_.mutable_actuators(idx)->set_command_id(base_command_.frame_id());
+            }
+
+            base_feedback_ = base_cyclic_->Refresh(base_command_, 0);
+        }
     }
+
     void SpotKinovaWrapper::init_body_posture_ctrl(ros::Time time){
         state_.spot.orientation_init = state_.spot.orientation;
         time_= time.toSec();
     }
-    void SpotKinovaWrapper::comput_body_posture_ctrl(ros::Time time){
+    void SpotKinovaWrapper::compute_body_posture_ctrl(ros::Time time){
         double cubic_t = cubic(time.toSec(), time_, time_ + state_.spot.duration, 0.0, 1.0, 0.0, 0.0 );
         state_.spot.orientation_des = state_.spot.orientation_init.slerp(state_.spot.orientation_ref, cubic_t);
     }
+
+    void SpotKinovaWrapper::init_predefined_posture_ctrl(string & name){
+        base_->ClearFaults();
+        control_mode_message_ = new k_api::ActuatorConfig::ControlModeInformation();
+        control_mode_message_->set_control_mode(k_api::ActuatorConfig::ControlMode::POSITION);
+        for (int i=0; i<7; i++)
+            actuator_config_->SetControlMode(*control_mode_message_, i+1);
+        
+        servoingMode_->set_servoing_mode(k_api::Base::ServoingMode::SINGLE_LEVEL_SERVOING);
+        base_->SetServoingMode(*servoingMode_);
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+        action_type_ = new k_api::Base::RequestedActionType();
+        action_type_->set_action_type(k_api::Base::REACH_JOINT_ANGLES);                    
+        auto action_list = base_->ReadAllActions(*action_type_);
+        auto action_handle = k_api::Base::ActionHandle();
+        action_handle.set_identifier(0);
+
+        for (auto action : action_list.action_list()) 
+        {
+            if (action.name() == name) 
+            {
+                action_handle = action.handle();
+            }
+        }
+
+        // Connect to notification action topic
+        std::promise<k_api::Base::ActionEvent> finish_promise;
+        auto finish_future = finish_promise.get_future();
+        auto promise_notification_handle = base_->OnNotificationActionTopic(
+            SpotKinovaWrapper::create_event_listener_by_promise(finish_promise),
+            k_api::Common::NotificationOptions()
+        );
+
+        // Execute action
+        base_->ExecuteActionFromReference(action_handle);
+
+        // Wait for future value from promise
+        const auto status = finish_future.wait_for(std::chrono::seconds{20});
+        base_->Unsubscribe(promise_notification_handle);
+
+        if(status != std::future_status::ready)
+        {
+            std::cout << "Timeout on action notification wait" << std::endl;
+        }
+        const auto promise_event = finish_future.get();
+    }
+
 }

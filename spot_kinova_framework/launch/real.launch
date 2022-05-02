@@ -1,0 +1,26 @@
+<launch>   
+    <param name="robot_group" type="string" value=""/>
+    <param name="issimulation" type="bool" value="false"/>
+
+    <param name="urdf_path" type="string" value="$(find spot_kinova_description)" />
+    <param name="urdf_name" type="string" value="/urdf/spot_kinova_simul.urdf" />
+    <param name="port_number" type="int" value="10000"/>
+    <param name="ip_address" type="string" value="192.168.1.10"/>
+    <param name="username" type="string" value="admin"/>
+    <param name="password" type="string" value="admin"/>
+
+    <node name="spot_kinova_framework_real" pkg="spot_kinova_framework" args="-keyboard" type="spot_kinova_framework_real" output="screen" />
+    <arg name="rviz_ref_frame"                  default="odom"/>
+
+    <arg name="description_file" default="$(find spot_kinova_description)/urdf/spot_kinova_simul.urdf"/>
+    <param name="robot_description" textfile="$(arg description_file)"/>
+
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find spot_viz)/rviz/robot.rviz -f $(arg rviz_ref_frame)" />
+   
+    <node name="arm_robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
+            <param name="use_tf_static"     value="false"/>
+            <param name="publish_frequency" value="100"/>
+            <param name="ignore_timestamp" value="true"/>
+            <remap from="joint_states"     to="arm/joint_states" />
+    </node>
+</launch>

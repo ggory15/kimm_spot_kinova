@@ -23,6 +23,7 @@ add_action_files(DIRECTORY action FILES
   Walk.action
   BodyPosture.action
   Wholebody.action
+  PredefinedPosture.action
 )
 
 # add_service_files(

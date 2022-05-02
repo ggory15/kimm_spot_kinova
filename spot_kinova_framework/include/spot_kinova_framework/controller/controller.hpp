@@ -99,12 +99,13 @@ namespace RobotController{
             void compute(const double &); 
             
             void init_joint_posture_ctrl(ros::Time time);
-            void comput_joint_posture_ctrl(ros::Time time);
+            void compute_joint_posture_ctrl(ros::Time time);
             void init_se3_ctrl(ros::Time time);
-            void comput_se3_ctrl(ros::Time time);
+            void compute_se3_ctrl(ros::Time time);
             void init_body_posture_ctrl(ros::Time time);
-            void comput_body_posture_ctrl(ros::Time time);
+            void compute_body_posture_ctrl(ros::Time time);
 
+            void init_predefined_posture_ctrl(string & name);
 
             int ctrltype(){
                 return ctrl_mode_;

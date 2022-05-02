@@ -37,6 +37,8 @@ class ControlSuiteShell(cmd.Cmd):
         self.walk_client.wait_for_server()
         self.body_posture_ctrl_client = actionlib.SimpleActionClient('/spot_kinova_action/body_posture_control', spot_kinova_msgs.msg.BodyPostureAction)
         self.body_posture_ctrl_client.wait_for_server()
+        self.wholebody_ctrl_client = actionlib.SimpleActionClient('/spot_kinova_action/wholebody_control', spot_kinova_msgs.msg.WholebodyAction)
+        self.wholebody_ctrl_client.wait_for_server()
 
     def do_home(self, arg):
         'Go to the home position using joint posture ctrl'
@@ -153,6 +155,36 @@ class ControlSuiteShell(cmd.Cmd):
         self.body_posture_ctrl_client.send_goal(goal)
         self.body_posture_ctrl_client.wait_for_result()
         if (self.body_posture_ctrl_client.get_result()):
+            print ("action succeed")
+        else:
+            print ("action failed")
+
+    def do_wholebody(self, arg):
+        goal = spot_kinova_msgs.msg.WholebodyGoal
+        goal.duration = 2.0
+
+        goal.target_body_pose = Pose()
+        goal.target_body_pose.orientation.x = 0.
+        goal.target_body_pose.orientation.y = -0.258819
+        goal.target_body_pose.orientation.z = 0.
+        goal.target_body_pose.orientation.w = 0.9659258
+
+        goal.target_ee_pose = Pose()
+        goal.target_ee_pose.position.x = 0.2
+        goal.target_ee_pose.position.y = -0.0
+        goal.target_ee_pose.position.z = 0.1
+
+        goal.target_ee_pose.orientation.x =  0.0
+        goal.target_ee_pose.orientation.y = 0
+        goal.target_ee_pose.orientation.z = 0.
+        goal.target_ee_pose.orientation.w = 1.0
+
+        goal.relative = True
+        
+        print ("anction sent")
+        self.wholebody_ctrl_client.send_goal(goal)
+        self.wholebody_ctrl_client.wait_for_result()
+        if (self.wholebody_ctrl_client.get_result()):
             print ("action succeed")
         else:
             print ("action failed")

@@ -1,5 +1,8 @@
 # Define the goal
-geometry_msgs/PoseStamped target_pose
+geometry_msgs/Pose target_ee_pose
+geometry_msgs/Pose target_body_pose
+float32 duration
+bool relative 
 ---
 # Define the result
 bool is_completed

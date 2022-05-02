@@ -45,6 +45,7 @@ int main(int argc, char **argv)
     se3_action_server_ = std::make_unique<SE3ActionServer>("/spot_kinova_action/se3_control", n_node, ctrl_);
     walk_action_server_ = std::make_unique<WalkActionServer>("/spot_kinova_action/move_base", n_node, ctrl_);
     body_posture_action_server_ = std::make_unique<BodyPostureActionServer>("/spot_kinova_action/body_posture_control", n_node, ctrl_);
+    wholebody_action_server_ = std::make_unique<WholebodyActionServer>("/spot_kinova_action/wholebody_control", n_node, ctrl_);
 
     // Variable Initialize
     time_ = 0.0;
@@ -57,7 +58,8 @@ int main(int argc, char **argv)
         se3_action_server_->compute(ros::Time::now());
         walk_action_server_->compute(ros::Time::now());
         body_posture_action_server_->compute(ros::Time::now());
-
+        wholebody_action_server_->compute(ros::Time::now());
+        
         publishJointState();
         publishBodyPose();
 

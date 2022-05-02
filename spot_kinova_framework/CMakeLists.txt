@@ -84,6 +84,7 @@ SET(${PROJECT_NAME}_HEADERS
   include/spot_kinova_framework/servers/se3_action_server.hpp
   include/spot_kinova_framework/servers/walk_action_server.hpp
   include/spot_kinova_framework/servers/body_posture_action_server.hpp
+  include/spot_kinova_framework/servers/wholebody_action_server.hpp
 )
 
 SET(${PROJECT_NAME}_SOURCES
@@ -95,6 +96,7 @@ SET(${PROJECT_NAME}_SOURCES
   src/servers/se3_action_server.cpp
   src/servers/walk_action_server.cpp
   src/servers/body_posture_action_server.cpp
+  src/servers/wholebody_action_server.cpp
 )
 
 

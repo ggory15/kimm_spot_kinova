@@ -66,7 +66,7 @@ Open Terminal (Warning: Please, don't use terminel in Vscode.)
 ```
 roslaunch kimm_spot_kinova unittest_spot_kinova.launch
 ```
-Then, you can see the moving of the spot.
+Then, you can see the movement of the spot.
 
 or
 ```

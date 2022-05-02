@@ -21,6 +21,7 @@ add_action_files(DIRECTORY action FILES
   JointPosture.action
   SE3.action
   Walk.action
+  WalkSimulation.action
   BodyPosture.action
   Wholebody.action
   PredefinedPosture.action

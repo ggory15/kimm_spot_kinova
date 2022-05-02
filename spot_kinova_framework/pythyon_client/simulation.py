@@ -33,7 +33,7 @@ class ControlSuiteShell(cmd.Cmd):
         self.joint_ctrl_client.wait_for_server()
         self.se3_ctrl_client = actionlib.SimpleActionClient('/spot_kinova_action/se3_control', spot_kinova_msgs.msg.SE3Action)
         self.se3_ctrl_client.wait_for_server()
-        self.walk_client = actionlib.SimpleActionClient('/spot_kinova_action/move_base', spot_kinova_msgs.msg.WalkAction)
+        self.walk_client = actionlib.SimpleActionClient('/spot_kinova_action/move_base', spot_kinova_msgs.msg.WalkSimulationAction)
         self.walk_client.wait_for_server()
         self.body_posture_ctrl_client = actionlib.SimpleActionClient('/spot_kinova_action/body_posture_control', spot_kinova_msgs.msg.BodyPostureAction)
         self.body_posture_ctrl_client.wait_for_server()

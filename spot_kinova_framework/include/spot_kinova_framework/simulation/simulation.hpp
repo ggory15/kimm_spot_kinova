@@ -24,7 +24,7 @@
 //SpotKinovaAction
 #include <spot_kinova_framework/servers/joint_posture_action_server.hpp>
 #include <spot_kinova_framework/servers/se3_action_server.hpp>
-#include <spot_kinova_framework/servers/walk_action_server.hpp>
+#include <spot_kinova_framework/servers/walk_simulation_action_server.hpp>
 #include <spot_kinova_framework/servers/body_posture_action_server.hpp>
 #include <spot_kinova_framework/servers/wholebody_action_server.hpp>
 
@@ -47,7 +47,7 @@ tf::Quaternion quat1_, quat2_, body_quat_;
 
 std::unique_ptr<JointPostureActionServer> joint_posture_action_server_;
 std::unique_ptr<SE3ActionServer> se3_action_server_;
-std::unique_ptr<WalkActionServer> walk_action_server_;
+std::unique_ptr<WalkSimulationActionServer> walk_action_server_;
 std::unique_ptr<BodyPostureActionServer> body_posture_action_server_;
 std::unique_ptr<WholebodyActionServer> wholebody_action_server_;
 

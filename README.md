@@ -63,6 +63,7 @@ sudo apt install ros-melodic-aruco
 
 ### For Kinova-RBDL
 ```
+sudo apt install gstreamer1.0-tools gstreamer1.0-libav libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-good1.0-dev gstreamer1.0-plugins-good gstreamer1.0-plugins-base
 sudo apt-get install ros-melodic-rgbd-launch
 git clone https://github.com/Kinovarobotics/ros_kortex_vision --recursive
 catkin_make

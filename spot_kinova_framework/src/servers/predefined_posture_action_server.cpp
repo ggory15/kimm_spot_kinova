@@ -54,12 +54,14 @@ void PredefinedPostureActionServer::signalAbort(bool is_aborted)
 void PredefinedPostureActionServer::setSucceeded()
 {
   as_.setSucceeded(result_);
-  mu_->done_se3_ctrl();
+  if (!mu_->simulation())
+    mu_->done_se3_ctrl();
   control_running_ = false;
 }
 void PredefinedPostureActionServer::setAborted()
 {
   as_.setAborted();
-  mu_->done_se3_ctrl();
+  if (!mu_->simulation())
+    mu_->done_se3_ctrl();
   control_running_ = false;
 }

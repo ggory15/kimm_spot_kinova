@@ -41,11 +41,9 @@ ros::Publisher joint_state_publisher_;
 ros::Publisher body_pose_publisher_;
 sensor_msgs::JointState joint_msg_;
 geometry_msgs::Pose pose_msg_;
-// actionlib::SimpleActionClient<spot_msgs::TrajectoryAction>* ac_;
 
 ros::Subscriber cmd_pose_subscriber_;
 ros::Subscriber body_state_subscriber_;
-ros::Subscriber nav_goal_subscriber_;
 
 Vector3d odom_pos_;
 tf::Quaternion quat1_, quat2_, body_quat_, quat_res_;
@@ -62,7 +60,6 @@ std::unique_ptr<QRActionServer> qr_action_server_;
 std::unique_ptr<GripperActionServer> gripper_action_server_;
 
 void bodyStateCallback(const nav_msgs::Odometry::ConstPtr& msg);
-void NavGollCallback_(const geometry_msgs::PoseStamped::ConstPtr& msg);
 void cmdPoseCallback(const spot_msgs::MobilityParams::ConstPtr& msg);
 void publishJointState();
 void publishBodyPose();

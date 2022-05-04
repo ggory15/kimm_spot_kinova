@@ -42,7 +42,7 @@ bool JointPostureActionServer::compute(ros::Time ctime)
       return false; 
   
   mu_->compute_joint_posture_ctrl(ctime);
-  ROS_WARN_STREAM((mu_->state().kinova.q_ref-mu_->state().kinova.q).norm());
+  //ROS_WARN_STREAM((mu_->state().kinova.q_ref-mu_->state().kinova.q).norm());
   if (ctime.toSec() - start_time_.toSec() > goal_->duration && (mu_->state().kinova.q_ref-mu_->state().kinova.q).norm() < 1e-3){
     setSucceeded();
     return true;
@@ -65,12 +65,14 @@ void JointPostureActionServer::signalAbort(bool is_aborted)
 void JointPostureActionServer::setSucceeded()
 {
   as_.setSucceeded(result_);
-  mu_->done_se3_ctrl();
+  if (!mu_->simulation())
+    mu_->done_se3_ctrl();
   control_running_ = false;
 }
 void JointPostureActionServer::setAborted()
 {
   as_.setAborted();
-  mu_->done_se3_ctrl();
+  if (!mu_->simulation())
+    mu_->done_se3_ctrl();
   control_running_ = false;
 }

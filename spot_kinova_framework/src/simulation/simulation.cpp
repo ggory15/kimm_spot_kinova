@@ -21,8 +21,7 @@ int main(int argc, char **argv)
     // Ros subscribe
     cmd_pose_subscriber_ = n_node.subscribe("base_to_footprint_pose", 1, &cmdPoseCallback);
     body_state_subscriber_ = n_node.subscribe("odom", 1, &bodyStateCallback);
-    move_base_subscriber_ = n_node.subscribe("move_base/result", 1, &movebaseCallback);
-
+    
     // Ros publish
     joint_state_publisher_ = n_node.advertise<sensor_msgs::JointState>("arm/joint_states", 100);   
     joint_msg_.name.resize(7);
@@ -51,7 +50,6 @@ int main(int argc, char **argv)
     time_ = 0.0;
 
     while (ros::ok()){
-        keyboard_event();
         ctrl_->kinova_update();
 
         joint_posture_action_server_->compute(ros::Time::now());
@@ -114,53 +112,3 @@ void bodyStateCallback(const nav_msgs::Odometry::ConstPtr& msg){
     ctrl_->spot_update(x, quat_res, quat1_, quat2_);
 }
 
-void movebaseCallback(const move_base_msgs::MoveBaseActionResult::ConstPtr& msg){
-    if (msg->status.status == 3)
-        ctrl_->ctrl_update(2);
-}
-
-void keyboard_event(){
-    if (_kbhit()){
-        int key;
-        key = getchar();
-        int msg = 0;
-        switch (key){
-            case 'h': { //home
-                msg = 0;
-                spot_kinova_msgs::JointPostureGoal goal;
-                goal.target_joints.position.resize(7);
-                goal.target_joints.position[0] = 0.0;
-                goal.target_joints.position[1] = -40.0 / 180. * M_PI;
-                goal.target_joints.position[2] = 3.14;
-                goal.target_joints.position[3] = -100 / 180. * M_PI;
-                goal.target_joints.position[4] = 0.0;
-                goal.target_joints.position[5] = 60. / 180. * M_PI;
-                goal.target_joints.position[6] = 1.57;
-                
-                goal.duration = 2.0f;
-
-                cout << " " << endl;
-                cout << "Move to Home Posture" << endl;
-                cout << " " << endl;
-                break;
-            }
-            case 'w': //home
-                msg = 1;
-                ctrl_->ctrl_update(msg);
-                
-                cout << " " << endl;
-                cout << "Move to Walking Posture" << endl;
-                cout << " " << endl;
-                break;
-            
-            // case 'g': // go
-            //     msg = 2;
-            //     ctrl_->ctrl_update(msg);
-                
-            //     cout << " " << endl;
-            //     cout << "Move to Walking Posture" << endl;
-            //     cout << " " << endl;
-            //     break;
-        }
-    }
-}

@@ -131,13 +131,15 @@ void WalkActionServer::signalAbort(bool is_aborted)
 void WalkActionServer::setSucceeded()
 {
   as_.setSucceeded(result_);
-  mu_->done_se3_ctrl();
+  if (!mu_->simulation())
+    mu_->done_se3_ctrl();
   control_running_ = false;
 }
 void WalkActionServer::setAborted()
 {
   as_.setAborted();
-  mu_->done_se3_ctrl();
+  if (!mu_->simulation())
+    mu_->done_se3_ctrl();
   control_running_ = false;
 }
 void WalkActionServer::movebaseCallback(const move_base_msgs::MoveBaseActionResult::ConstPtr& msg){

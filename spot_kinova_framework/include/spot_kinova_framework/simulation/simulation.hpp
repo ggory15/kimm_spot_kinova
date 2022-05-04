@@ -40,7 +40,6 @@ geometry_msgs::Pose pose_msg_;
 
 ros::Subscriber cmd_pose_subscriber_;
 ros::Subscriber body_state_subscriber_;
-ros::Subscriber move_base_subscriber_;
 
 Vector3d odom_pos_;
 tf::Quaternion quat1_, quat2_, body_quat_;
@@ -53,26 +52,5 @@ std::unique_ptr<WholebodyActionServer> wholebody_action_server_;
 
 void cmdPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg);
 void bodyStateCallback(const nav_msgs::Odometry::ConstPtr& msg);
-void movebaseCallback(const move_base_msgs::MoveBaseActionResult::ConstPtr& msg);
 void publishJointState();
 void publishBodyPose();
-
-void keyboard_event();
-bool _kbhit()
-{
-    termios term;
-    tcgetattr(0, &term);
-
-    termios term2 = term;
-    term2.c_lflag &= ~ICANON;
-    tcsetattr(0, TCSANOW, &term2);
-
-    int byteswaiting;
-    ioctl(0, FIONREAD, &byteswaiting);
-
-    tcsetattr(0, TCSANOW, &term);
-
-    return byteswaiting > 0;
-};
-
-

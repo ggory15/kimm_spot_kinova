@@ -104,12 +104,14 @@ void WholebodyActionServer::signalAbort(bool is_aborted)
 void WholebodyActionServer::setSucceeded()
 {
   as_.setSucceeded(result_);
-  mu_->done_se3_ctrl();
+  if (!mu_->simulation())
+    mu_->done_se3_ctrl();
   control_running_ = false;
 }
 void WholebodyActionServer::setAborted()
 {
   as_.setAborted();
-  mu_->done_se3_ctrl();
+  if (!mu_->simulation())
+    mu_->done_se3_ctrl();
   control_running_ = false;
 }

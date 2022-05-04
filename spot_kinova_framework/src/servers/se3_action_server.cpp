@@ -86,12 +86,14 @@ void SE3ActionServer::signalAbort(bool is_aborted)
 void SE3ActionServer::setSucceeded()
 {
   as_.setSucceeded(result_);
-  mu_->done_se3_ctrl();
+  if (!mu_->simulation())
+    mu_->done_se3_ctrl();
   control_running_ = false;
 }
 void SE3ActionServer::setAborted()
 {
   as_.setAborted();
-  mu_->done_se3_ctrl();
+  if (!mu_->simulation())
+    mu_->done_se3_ctrl();
   control_running_ = false;
 }

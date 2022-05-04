@@ -7,7 +7,8 @@ GripperActionServer::GripperActionServer(std::string name, ros::NodeHandle &nh, 
 	as_.registerPreemptCallback(boost::bind(&GripperActionServer::preemptCallback, this));
   as_.start();  
 
-  mu_->done_se3_ctrl();
+  if (!mu_->simulation())
+    mu_->done_se3_ctrl();
 }
 
 void GripperActionServer::goalCallback()
@@ -58,12 +59,14 @@ void GripperActionServer::signalAbort(bool is_aborted)
 void GripperActionServer::setSucceeded()
 {
   as_.setSucceeded(result_);
-  mu_->done_se3_ctrl();
+  if (!mu_->simulation())
+    mu_->done_se3_ctrl();
   control_running_ = false;
 }
 void GripperActionServer::setAborted()
 {
   as_.setAborted();
-  mu_->done_se3_ctrl();
+  if (!mu_->simulation())
+    mu_->done_se3_ctrl();
   control_running_ = false;
 }

@@ -128,13 +128,15 @@ void QRActionServer::signalAbort(bool is_aborted)
 void QRActionServer::setSucceeded()
 {
   as_.setSucceeded(result_);
-  mu_->done_se3_ctrl();
+  if (!mu_->simulation())
+    mu_->done_se3_ctrl();
   control_running_ = false;
 }
 void QRActionServer::setAborted()
 {
   as_.setAborted();
-  mu_->done_se3_ctrl();
+  if (!mu_->simulation())
+    mu_->done_se3_ctrl();
   control_running_ = false;
 }
 void QRActionServer::qrCallback(const geometry_msgs::Pose::ConstPtr& msg){

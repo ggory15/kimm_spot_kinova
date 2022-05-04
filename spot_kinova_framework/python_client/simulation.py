@@ -73,6 +73,24 @@ class ControlSuiteShell(cmd.Cmd):
         else:
             print ("action failed")
 
+    def do_ready(self, arg):
+        'Go to the folding position using joint posture ctrl'
+        goal = spot_kinova_msgs.msg.JointPostureGoal
+        goal.duration = 2.0
+        goal.target_joints = JointState()
+        goal.target_joints.position = np.array([0.0, -90.0, 180.0, -90.0, 0, -90.0, 90.0]) * 3.14/180.0
+
+        print ("anction sent")
+        self.joint_ctrl_client.send_goal(goal)
+        self.joint_ctrl_client.wait_for_result()
+        if (self.joint_ctrl_client.get_result()):
+            print ("action succeed")
+            self.do_body(True)
+            self.do_walk(True)
+
+        else:
+            print ("action failed")
+
     def do_reach(self, arg):
         goal = spot_kinova_msgs.msg.SE3Goal
         goal.duration = 2.0

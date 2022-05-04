@@ -22,7 +22,6 @@ int main(int argc, char **argv)
 
     // Ros subscribe
     body_state_subscriber_ = n_node.subscribe("/spot/odometry", 1, &bodyStateCallback);
-    // nav_goal_subscriber_ = n_node.subscribe("/move_base_simple/goal", 1, &NavGollCallback_);
     cmd_pose_subscriber_ = n_node.subscribe("/spot/status/mobility_params", 1, &cmdPoseCallback);
 
     // Ros publish
@@ -113,55 +112,4 @@ void bodyStateCallback(const nav_msgs::Odometry::ConstPtr& msg){
 }
 void cmdPoseCallback(const spot_msgs::MobilityParams::ConstPtr& msg){
     quat1_ = tf::Quaternion(msg->body_control.orientation.x, msg->body_control.orientation.y, msg->body_control.orientation.z, msg->body_control.orientation.w);
-}
-void NavGollCallback_(const geometry_msgs::PoseStamped::ConstPtr& msg){
-    // Quaterniond goal_quat, odom_quat;
-    // Vector3d goal_pos, odom_pos;
-    // goal_quat.x() = msg->pose.orientation.x;
-    // goal_quat.y() = msg->pose.orientation.y;
-    // goal_quat.z() = msg->pose.orientation.z;
-    // goal_quat.w() = msg->pose.orientation.w;
-    
-    // goal_pos(0) =  msg->pose.position.x;
-    // goal_pos(1) =  msg->pose.position.y;
-    // goal_pos(2) =  msg->pose.position.z;
-
-    // SE3 goal_tf(goal_quat, goal_pos);
-
-    // odom_quat.x() = quat_res_.getX();
-    // odom_quat.y() = quat_res_.getY();
-    // odom_quat.z() = quat_res_.getZ();
-    // odom_quat.w() = quat_res_.getW();
-    
-    // odom_pos(0) =  x_(0);
-    // odom_pos(1) =  x_(1);
-    // odom_pos(2) =  0.0;//q_(2);
-
-    // SE3 odom_tf(odom_quat, odom_pos);
-    // action_walk_tf_ = odom_tf.inverse() * goal_tf;
-    
-    // ROS_WARN_STREAM("Goal's Reletive Position is");
-    // ROS_WARN_STREAM(action_walk_tf_);
-
-    // if (ctrl_->state().spot.body_tilted)
-    //     ROS_WARN_STREAM("body is tilted");
-    // else{
-    //     spot_msgs::TrajectoryGoal goal;
-    //     goal.target_pose.header.frame_id = "body";
-    //     goal.target_pose.pose.position.x = action_walk_tf_.translation()(0);
-    //     goal.target_pose.pose.position.y = action_walk_tf_.translation()(1);
-    //     goal.target_pose.pose.position.z = action_walk_tf_.translation()(2);
-
-    //     Quaterniond quat_tmp = Eigen::Quaterniond(action_walk_tf_.rotation());
-    //     goal.target_pose.pose.orientation.x = quat_tmp.x();
-    //     goal.target_pose.pose.orientation.y = quat_tmp.y();
-    //     goal.target_pose.pose.orientation.z = quat_tmp.z();
-    //     goal.target_pose.pose.orientation.w = quat_tmp.w();
-
-    //     goal.duration.data.sec = 10.0;
-    //     goal.precise_positioning = true;
-    //     ROS_WARN_STREAM("Action Sent");
-    //     ac_->sendGoal(goal);            
-    //     ROS_WARN_STREAM("Action Activated:");
-    // }
 }

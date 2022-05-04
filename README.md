@@ -56,6 +56,18 @@ catkin_make
 sudo pip3 install pyyaml -U
 ```
 
+### For Aruco
+```
+sudo apt install ros-melodic-aruco
+```
+
+### For Kinova-RBDL
+```
+sudo apt-get install ros-melodic-rgbd-launch
+git clone https://github.com/Kinovarobotics/ros_kortex_vision --recursive
+catkin_make
+```
+
 ## Install
 ```
 catkin_make --cmake-args -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.6m -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.6m.so.1.0

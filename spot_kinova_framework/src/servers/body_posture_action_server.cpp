@@ -19,12 +19,13 @@ void BodyPostureActionServer::goalCallback()
     start_time_ = ros::Time::now();
     mu_->init_body_posture_ctrl(start_time_);
     
-    if (goal_->target_pose.orientation.w < 0.99)
+    if (goal_->target_pose.orientation.w < 0.98)
       mu_->state().spot.body_tilted = true;
     else
       mu_->state().spot.body_tilted = false;
     
     mu_->state().spot.orientation_publish = true;
+    
 
     control_running_ = true;  
 }
@@ -70,10 +71,12 @@ void BodyPostureActionServer::signalAbort(bool is_aborted)
 void BodyPostureActionServer::setSucceeded()
 {
   as_.setSucceeded(result_);
+  mu_->done_se3_ctrl();
   control_running_ = false;
 }
 void BodyPostureActionServer::setAborted()
 {
   as_.setAborted();
+  mu_->done_se3_ctrl();
   control_running_ = false;
 }

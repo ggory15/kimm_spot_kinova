@@ -6,6 +6,13 @@
 #include <move_base_msgs/MoveBaseActionResult.h>
 #include "tf/transform_datatypes.h"
 #include <fstream>
+#include "spot_msgs/TrajectoryAction.h"
+#include <actionlib/server/simple_action_server.h>
+#include <actionlib/client/simple_action_client.h>
+#include "actionlib/client/simple_goal_state.h"
+#include "actionlib/client/simple_client_goal_state.h"
+#include "actionlib/client/terminal_state.h"
+#include "pinocchio/fwd.hpp"
 
 using namespace pinocchio;
 using namespace Eigen;
@@ -13,6 +20,7 @@ using namespace Eigen;
 class WalkActionServer : public ActionServerBase
 {
   actionlib::SimpleActionServer<spot_kinova_msgs::WalkAction> as_;
+  actionlib::SimpleActionClient<spot_msgs::TrajectoryAction>* ac_;
 
   spot_kinova_msgs::WalkFeedback feedback_;
   spot_kinova_msgs::WalkResult result_;

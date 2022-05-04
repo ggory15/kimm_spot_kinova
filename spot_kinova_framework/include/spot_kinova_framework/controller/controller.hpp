@@ -104,8 +104,11 @@ namespace RobotController{
             void compute_se3_ctrl(ros::Time time);
             void init_body_posture_ctrl(ros::Time time);
             void compute_body_posture_ctrl(ros::Time time);
+            void done_se3_ctrl();
 
             void init_predefined_posture_ctrl(string & name);
+            void init_open_gripper();
+            void init_close_girpper();
 
             int ctrltype(){
                 return ctrl_mode_;
@@ -122,7 +125,7 @@ namespace RobotController{
             }
 
         private:
-            bool issimulation_, mode_change_;
+            bool issimulation_, mode_change_, kinova_gripper_;
             std::string robot_node_;
             
             State state_;
@@ -167,6 +170,9 @@ namespace RobotController{
             k_api::Base::JointAngles joint_from_kinova_;
             k_api::BaseCyclic::Feedback base_feedback_;
             k_api::BaseCyclic::Command  base_command_;
+            k_api::Base::GripperCommand gripper_command_;
+            k_api::Base::Gripper gripper_feedback_;
+            k_api::Base::GripperRequest gripper_request_;
 
             std::function<void(k_api::Base::ActionNotification)> 
             create_event_listener_by_promise(std::promise<k_api::Base::ActionEvent>& finish_promise)

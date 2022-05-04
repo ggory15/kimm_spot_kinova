@@ -11,6 +11,8 @@ import importlib, pkgutil
 import threading
 import cmd, sys, os
 import copy
+import time
+
 
 class bcolors:
     HEADER = '\033[95m'
@@ -41,11 +43,15 @@ class ControlSuiteShell(cmd.Cmd):
         self.wholebody_ctrl_client.wait_for_server()
         self.predefined_posture_ctrl_client = actionlib.SimpleActionClient('/spot_kinova_action/predefined_posture_control', spot_kinova_msgs.msg.PredefinedPostureAction)
         self.predefined_posture_ctrl_client.wait_for_server()
+        self.qr_ctrl_client = actionlib.SimpleActionClient('/spot_kinova_action/qr_control', spot_kinova_msgs.msg.QRAction)
+        self.qr_ctrl_client.wait_for_server()
+        self.gripper_ctrl_client = actionlib.SimpleActionClient('/spot_kinova_action/gripper_control', spot_kinova_msgs.msg.GripperAction)
+        self.gripper_ctrl_client.wait_for_server()
 
     def do_prehome(self, arg):
         'Go to the home position using predefined posture ctrl'
         goal = spot_kinova_msgs.msg.PredefinedPostureGoal
-        goal.target_name = "NewHome"
+        goal.posture_name = "NewHome"
 
         print ("anction sent")
         self.predefined_posture_ctrl_client.send_goal(goal)
@@ -58,7 +64,7 @@ class ControlSuiteShell(cmd.Cmd):
     def do_prefold(self, arg):
         'Go to the home position using predefined posture ctrl'
         goal = spot_kinova_msgs.msg.PredefinedPostureGoal
-        goal.target_name = "NewTurnOff"
+        goal.posture_name = "NewTurnOff"
 
         print ("anction sent")
         self.predefined_posture_ctrl_client.send_goal(goal)
@@ -71,7 +77,7 @@ class ControlSuiteShell(cmd.Cmd):
     def do_home(self, arg):
         'Go to the home position using joint posture ctrl'
         goal = spot_kinova_msgs.msg.JointPostureGoal
-        goal.duration = 2.0
+        goal.duration = 5.0
         goal.target_joints = JointState()
         goal.target_joints.position = np.array([0.0, -40.0 / 180.0 * 3.14, 3.14, -100 / 180.0 * 3.14, 0, 60. / 180. * 3.14, 1.57])
         
@@ -82,7 +88,248 @@ class ControlSuiteShell(cmd.Cmd):
             print ("action succeed")
         else:
             print ("action failed")
+
+    def do_reach(self, arg):
+        goal = spot_kinova_msgs.msg.SE3Goal
+        goal.duration = 3.0
+        goal.target_pose = Pose()
+        goal.target_pose.position.x = +0.1
+        goal.target_pose.position.y = 0.0
+        goal.target_pose.position.z = 0.0
+
+        goal.target_pose.orientation.x =  0.0
+        goal.target_pose.orientation.y = 0
+        goal.target_pose.orientation.z = 0.
+        goal.target_pose.orientation.w = 1
+
+        goal.relative = True
+
+        print ("anction sent")
+        self.se3_ctrl_client.send_goal(goal)
+        self.se3_ctrl_client.wait_for_result()
+        if (self.se3_ctrl_client.get_result()):
+            print ("action succeed")
+        else:
+            print ("action failed")
+
+    def do_bodydown(self, arg):
+        goal = spot_kinova_msgs.msg.BodyPostureGoal
+        goal.duration =5.0
+
+        goal.target_pose = Pose()
+        goal.target_pose.orientation.x =  0.0
+        goal.target_pose.orientation.y = 0.174
+        goal.target_pose.orientation.z = 0.
+        goal.target_pose.orientation.w = 0.985
+
+        if (arg == True):
+            goal.target_pose.orientation.x =  0.0
+            goal.target_pose.orientation.y = 0
+            goal.target_pose.orientation.z = 0.
+            goal.target_pose.orientation.w = 1.0      
+
+        print ("anction sent")
+        self.body_posture_ctrl_client.send_goal(goal)
+        self.body_posture_ctrl_client.wait_for_result()
+        if (self.body_posture_ctrl_client.get_result()):
+            print ("action succeed")
+        else:
+            print ("action failed")
+
+    def do_bodyup(self, arg):
+        goal = spot_kinova_msgs.msg.BodyPostureGoal
+        goal.duration =5.0
+
+        goal.target_pose = Pose()
+        goal.target_pose.orientation.x =  0.0
+        goal.target_pose.orientation.y = -0.174
+        goal.target_pose.orientation.z = 0.
+        goal.target_pose.orientation.w = 0.985
+
+        if (arg == True):
+            goal.target_pose.orientation.x =  0.0
+            goal.target_pose.orientation.y = 0.
+            goal.target_pose.orientation.z = 0.
+            goal.target_pose.orientation.w = 1.0      
+
+        print ("anction sent")
+        self.body_posture_ctrl_client.send_goal(goal)
+        self.body_posture_ctrl_client.wait_for_result()
+        if (self.body_posture_ctrl_client.get_result()):
+            print ("action succeed")
+        else:
+            print ("action failed")
+
+    def do_bodyflat(self, arg):
+        goal = spot_kinova_msgs.msg.BodyPostureGoal
+        goal.duration =5.0
+
+        goal.target_pose = Pose()
+        goal.target_pose.orientation.x =  0.0
+        goal.target_pose.orientation.y = 0.0
+        goal.target_pose.orientation.z = 0.
+        goal.target_pose.orientation.w = 1.0      
+
+        print ("anction sent")
+        self.body_posture_ctrl_client.send_goal(goal)
+        self.body_posture_ctrl_client.wait_for_result()
+        if (self.body_posture_ctrl_client.get_result()):
+            print ("action succeed")
+        else:
+            print ("action failed")
+
+    def do_wholebody(self, arg):
+        goal = spot_kinova_msgs.msg.WholebodyGoal
+        goal.duration = 3.0
+
+        goal.target_body_pose = Pose()
+        goal.target_body_pose.orientation.x = 0.
+        goal.target_body_pose.orientation.y = -0.174
+        goal.target_body_pose.orientation.z = 0.
+        goal.target_body_pose.orientation.w = 0.985
+
+        goal.target_ee_pose = Pose()
+        goal.target_ee_pose.position.x = 0.2
+        goal.target_ee_pose.position.y = -0.0
+        goal.target_ee_pose.position.z = 0.1
+
+        goal.target_ee_pose.orientation.x =  0.0
+        goal.target_ee_pose.orientation.y = 0
+        goal.target_ee_pose.orientation.z = 0.
+        goal.target_ee_pose.orientation.w = 1.0
+
+        goal.relative = True
+        
+        print ("anction sent")
+        self.wholebody_ctrl_client.send_goal(goal)
+        self.wholebody_ctrl_client.wait_for_result()
+        if (self.wholebody_ctrl_client.get_result()):
+            print ("action succeed")
+        else:
+            print ("action failed")
+
+    def do_walk(self, arg):       
+        goal = spot_kinova_msgs.msg.WalkGoal
+
+        goal.target_pose = Pose()
+        goal.target_pose.position.x = 1.16
+        goal.target_pose.position.y = -0.8
+        goal.target_pose.position.z = 0.0
+
+        goal.target_pose.orientation.x = 0.0
+        goal.target_pose.orientation.y = 0.0
+        goal.target_pose.orientation.z = -0.3338069
+        goal.target_pose.orientation.w = 0.9426415
+
+
+        goal.relative = False
+
+        print ("anction sent")
+        self.walk_client.send_goal(goal)
+        self.walk_client.wait_for_result()
+
+        if (self.walk_client.get_result()):
+            print ("action succeed")
+        else:
+            print ("action failed")
+    
+    def do_overall(self, arg):       
+        'Go to the home position using predefined posture ctrl'
+        goal = spot_kinova_msgs.msg.PredefinedPostureGoal
+        goal.posture_name = "NewTurnOff"
+
+        print ("anction sent")
+        self.predefined_posture_ctrl_client.send_goal(goal)
+        self.predefined_posture_ctrl_client.wait_for_result()
+        if (self.predefined_posture_ctrl_client.get_result()):
             
+            goal = spot_kinova_msgs.msg.WalkGoal
+
+            goal.target_pose = Pose()
+            goal.target_pose.position.x = 1.0
+            goal.target_pose.position.y = -0.0
+            goal.target_pose.position.z = 0.0
+
+            goal.target_pose.orientation.x =  0.0
+            goal.target_pose.orientation.y = 0
+            goal.target_pose.orientation.z = 0.
+            goal.target_pose.orientation.w = 1.0
+
+            goal.relative = True
+
+            print ("anction sent")
+            self.walk_client.send_goal(goal)
+            self.walk_client.wait_for_result()
+
+            # if (self.walk_client.get_result()):
+            #     time.sleep(1)
+            #     goal = spot_kinova_msgs.msg.WholebodyGoal
+            #     goal.duration = 3.0
+
+            #     goal.target_body_pose = Pose()
+            #     goal.target_body_pose.orientation.x = 0.
+            #     goal.target_body_pose.orientation.y = -0.174
+            #     goal.target_body_pose.orientation.z = 0.
+            #     goal.target_body_pose.orientation.w = 0.985
+
+            #     goal.target_ee_pose = Pose()
+            #     goal.target_ee_pose.position.x = 0.2
+            #     goal.target_ee_pose.position.y = -0.0
+            #     goal.target_ee_pose.position.z = 0.1
+
+            #     goal.target_ee_pose.orientation.x =  0.0
+            #     goal.target_ee_pose.orientation.y = 0
+            #     goal.target_ee_pose.orientation.z = 0.
+            #     goal.target_ee_pose.orientation.w = 1.0
+
+            #     goal.relative = True
+                
+            #     print ("anction sent")
+            #     self.wholebody_ctrl_client.send_goal(goal)
+            #     self.wholebody_ctrl_client.wait_for_result()
+            #     if (self.wholebody_ctrl_client.get_result()):
+            #         time.sleep(1)
+            #         self.do_bodyflat(arg)
+
+    def do_qr(self, arg):
+        'Go to the qr position'
+        goal = spot_kinova_msgs.msg.QRGoal
+        goal.topic_name = "aruco_markers_pose1"
+
+        print ("anction sent")
+        self.qr_ctrl_client.send_goal(goal)
+        self.qr_ctrl_client.wait_for_result()
+    
+    def do_open(self, arg):
+        'Open Gripper'
+        goal = spot_kinova_msgs.msg.GripperGoal
+        goal.open = True
+
+        print ("anction sent")
+        self.gripper_ctrl_client.send_goal(goal)
+        self.gripper_ctrl_client.wait_for_result()
+
+        if (self.gripper_ctrl_client.get_result()):
+            print ("action succeed")
+        else:
+            print ("action failed")
+    
+    
+    def do_close(self, arg):
+        'Open Gripper'
+        goal = spot_kinova_msgs.msg.GripperGoal
+        goal.open = False
+
+        print ("anction sent")
+        self.gripper_ctrl_client.send_goal(goal)
+        self.gripper_ctrl_client.wait_for_result()
+
+        if (self.gripper_ctrl_client.get_result()):
+            print ("action succeed")
+        else:
+            print ("action failed")
+    
+
     def do_quit(self, arg):
         return True
 

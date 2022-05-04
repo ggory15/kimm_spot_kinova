@@ -37,7 +37,10 @@ void SE3ActionServer::goalCallback()
       mu_->state().kinova.H_ee_ref = oMi_ref;
     }
     mu_->state().kinova.duration = goal_->duration;
-    
+
+    if (!mu_->simulation())
+      mu_->state().kinova.lowlevel_ctrl = true;
+        
     start_time_ = ros::Time::now();
     mu_->init_se3_ctrl(start_time_);
     control_running_ = true;  
@@ -60,13 +63,13 @@ bool SE3ActionServer::compute(ros::Time ctime)
   
   mu_->compute_se3_ctrl(ctime);
   
-
-  if (ctime.toSec() - start_time_.toSec() > goal_->duration && (mu_->state().kinova.H_ee.translation()-mu_->state().kinova.H_ee_ref.translation()).norm() < 1e-5){
+  //ROS_WARN_STREAM((mu_->state().kinova.H_ee.translation()-mu_->state().kinova.H_ee_ref.translation()).norm());
+  if (ctime.toSec() - start_time_.toSec() > goal_->duration && (mu_->state().kinova.H_ee.translation()-mu_->state().kinova.H_ee_ref.translation()).norm() < 5e-3){
     setSucceeded();
     return true;
   }
 
-  if (ctime.toSec() - start_time_.toSec()  > goal_->duration+ 10.0){
+  if (ctime.toSec() - start_time_.toSec()  > goal_->duration+ 5.0){
     setAborted();
     return false;
   }
@@ -83,10 +86,12 @@ void SE3ActionServer::signalAbort(bool is_aborted)
 void SE3ActionServer::setSucceeded()
 {
   as_.setSucceeded(result_);
+  mu_->done_se3_ctrl();
   control_running_ = false;
 }
 void SE3ActionServer::setAborted()
 {
   as_.setAborted();
+  mu_->done_se3_ctrl();
   control_running_ = false;
 }

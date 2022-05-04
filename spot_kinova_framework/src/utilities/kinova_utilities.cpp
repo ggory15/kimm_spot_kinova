@@ -45,3 +45,32 @@ ExampleArgs ParseExampleArguments(int argc, char *argv[])
     
     return resultArgs;
 }
+double wrapRadiansFromMinusPiToPi(double rad_not_wrapped, int& number_of_turns)
+{
+    bool properly_wrapped = false;
+    number_of_turns = 0;
+    do 
+    {
+        if (rad_not_wrapped > M_PI)
+        {
+            number_of_turns += 1;
+            rad_not_wrapped -= 2.0*M_PI;
+        }
+        else if (rad_not_wrapped < -M_PI)
+        {
+            number_of_turns -= 1;
+            rad_not_wrapped += 2.0*M_PI;
+        }
+        else
+        {
+            properly_wrapped = true;
+        }
+    } while(!properly_wrapped);
+    return rad_not_wrapped;
+}
+
+double wrapRadiansFromMinusPiToPi(double rad_not_wrapped)
+{
+    int n;
+    return wrapRadiansFromMinusPiToPi(rad_not_wrapped, n);
+}

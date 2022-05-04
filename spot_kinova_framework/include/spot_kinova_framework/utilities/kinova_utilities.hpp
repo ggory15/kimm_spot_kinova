@@ -9,11 +9,14 @@
  * Refer to the LICENSE file for details.
  *
  */
-
+#pragma once
 #ifndef KORTEX_EXAMPLES_UTILITIES_H
 #define KORTEX_EXAMPLES_UTILITIES_H
 
 #include "spot_kinova_framework/utilities/cxxopts.hpp"
+#include <Eigen/Core>
+
+using namespace Eigen;
 
 struct ExampleArgs
 {
@@ -23,5 +26,9 @@ struct ExampleArgs
 };
 
 ExampleArgs ParseExampleArguments(int argc, char *argv[]);
+
+double wrapRadiansFromMinusPiToPi(double rad_not_wrapped, int& number_of_turns);
+
+double wrapRadiansFromMinusPiToPi(double rad_not_wrapped);
 
 #endif //KORTEX_EXAMPLES_UTILITIES_H

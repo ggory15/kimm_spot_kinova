@@ -20,6 +20,10 @@ void WholebodyActionServer::goalCallback()
     mode_change_ = false;
     isrelative_ = goal_->relative;
 
+    if (!mu_->simulation())
+      mu_->state().kinova.lowlevel_ctrl = true;
+      
+
     //for arm
     if (!isrelative_){
       Eigen::Vector3d pos(goal_->target_ee_pose.position.x, goal_->target_ee_pose.position.y, goal_->target_ee_pose.position.z);
@@ -39,11 +43,12 @@ void WholebodyActionServer::goalCallback()
     }
     mu_->state().kinova.duration = goal_->duration;
 
+    
     // for spot
     mu_->state().spot.duration = goal_->duration;
     mu_->state().spot.orientation_ref = tf::Quaternion(goal_->target_body_pose.orientation.x, goal_->target_body_pose.orientation.y, goal_->target_body_pose.orientation.z, goal_->target_body_pose.orientation.w) ;
         
-    if (goal_->target_body_pose.orientation.w < 0.99)
+    if (goal_->target_body_pose.orientation.w < 0.98)
       mu_->state().spot.body_tilted = true;
     else
       mu_->state().spot.body_tilted = false;
@@ -75,13 +80,13 @@ bool WholebodyActionServer::compute(ros::Time ctime)
   mu_->compute_body_posture_ctrl(ctime);
   
 
-  if (ctime.toSec() - start_time_.toSec() > goal_->duration && (mu_->state().kinova.H_ee.translation()-mu_->state().kinova.H_ee_ref.translation()).norm() < 1e-5){
+  if (ctime.toSec() - start_time_.toSec() > goal_->duration && (mu_->state().kinova.H_ee.translation()-mu_->state().kinova.H_ee_ref.translation()).norm() < 5e-3){
     setSucceeded();
     mu_->state().spot.orientation_publish = false;
     return true;
   }
 
-  if (ctime.toSec() - start_time_.toSec()  > goal_->duration+ 10.0){
+  if (ctime.toSec() - start_time_.toSec()  > goal_->duration+ 5.0){
     setAborted();
     mu_->state().spot.orientation_publish = false;
     return false;
@@ -99,10 +104,12 @@ void WholebodyActionServer::signalAbort(bool is_aborted)
 void WholebodyActionServer::setSucceeded()
 {
   as_.setSucceeded(result_);
+  mu_->done_se3_ctrl();
   control_running_ = false;
 }
 void WholebodyActionServer::setAborted()
 {
   as_.setAborted();
+  mu_->done_se3_ctrl();
   control_running_ = false;
 }

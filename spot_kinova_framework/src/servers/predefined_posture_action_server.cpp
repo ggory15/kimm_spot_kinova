@@ -15,6 +15,7 @@ void PredefinedPostureActionServer::goalCallback()
     
     mu_->state().kinova.lowlevel_ctrl = false;
     string posture_name = goal_->posture_name;
+    //ROS_WARN_STREAM(posture_name);
     mu_->init_predefined_posture_ctrl(posture_name);
 
     start_time_ = ros::Time::now();
@@ -36,7 +37,7 @@ bool PredefinedPostureActionServer::compute(ros::Time ctime)
   if (!as_.isActive())
       return false; 
   
-  if (ctime.toSec() - start_time_.toSec() > 10.0){
+  if (ctime.toSec() - start_time_.toSec() > 1.0){
     setSucceeded();
     return true;
   }
@@ -53,10 +54,12 @@ void PredefinedPostureActionServer::signalAbort(bool is_aborted)
 void PredefinedPostureActionServer::setSucceeded()
 {
   as_.setSucceeded(result_);
+  mu_->done_se3_ctrl();
   control_running_ = false;
 }
 void PredefinedPostureActionServer::setAborted()
 {
   as_.setAborted();
+  mu_->done_se3_ctrl();
   control_running_ = false;
 }

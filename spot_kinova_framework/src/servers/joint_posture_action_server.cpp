@@ -18,6 +18,9 @@ void JointPostureActionServer::goalCallback()
         mu_->state().kinova.q_ref[i] = goal_->target_joints.position[i];
     mu_->state().kinova.duration = goal_->duration;
     
+    if (!mu_->simulation())
+      mu_->state().kinova.lowlevel_ctrl = true;
+    
     start_time_ = ros::Time::now();
     mu_->init_joint_posture_ctrl(start_time_);
     control_running_ = true;  
@@ -39,13 +42,13 @@ bool JointPostureActionServer::compute(ros::Time ctime)
       return false; 
   
   mu_->compute_joint_posture_ctrl(ctime);
-
-  if (ctime.toSec() - start_time_.toSec() > goal_->duration && (mu_->state().kinova.q_ref-mu_->state().kinova.q).norm() < 1e-5){
+  ROS_WARN_STREAM((mu_->state().kinova.q_ref-mu_->state().kinova.q).norm());
+  if (ctime.toSec() - start_time_.toSec() > goal_->duration && (mu_->state().kinova.q_ref-mu_->state().kinova.q).norm() < 1e-3){
     setSucceeded();
     return true;
   }
 
-  if (ctime.toSec() - start_time_.toSec()  > goal_->duration + 10.0){
+  if (ctime.toSec() - start_time_.toSec()  > goal_->duration + 3.0){
     setAborted();
     return false;
   }
@@ -62,10 +65,12 @@ void JointPostureActionServer::signalAbort(bool is_aborted)
 void JointPostureActionServer::setSucceeded()
 {
   as_.setSucceeded(result_);
+  mu_->done_se3_ctrl();
   control_running_ = false;
 }
 void JointPostureActionServer::setAborted()
 {
   as_.setAborted();
+  mu_->done_se3_ctrl();
   control_running_ = false;
 }

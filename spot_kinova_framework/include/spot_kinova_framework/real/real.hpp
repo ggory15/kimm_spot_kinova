@@ -28,12 +28,9 @@
 #include <spot_kinova_framework/servers/body_posture_action_server.hpp>
 #include <spot_kinova_framework/servers/wholebody_action_server.hpp>
 #include <spot_kinova_framework/servers/predefined_posture_action_server.hpp>
-#include <actionlib/server/simple_action_server.h>
-#include <actionlib/client/simple_action_client.h>
-#include "actionlib/client/simple_goal_state.h"
-#include "actionlib/client/simple_client_goal_state.h"
-#include "actionlib/client/terminal_state.h"
-#include "spot_msgs/TrajectoryAction.h"
+#include <spot_kinova_framework/servers/qr_action_server.hpp>
+#include <spot_kinova_framework/servers/gripper_action_server.hpp>
+#include "spot_msgs/MobilityParams.h"
 
 using namespace Eigen;
 
@@ -44,7 +41,7 @@ ros::Publisher joint_state_publisher_;
 ros::Publisher body_pose_publisher_;
 sensor_msgs::JointState joint_msg_;
 geometry_msgs::Pose pose_msg_;
-actionlib::SimpleActionClient<spot_msgs::TrajectoryAction>* ac_;
+// actionlib::SimpleActionClient<spot_msgs::TrajectoryAction>* ac_;
 
 ros::Subscriber cmd_pose_subscriber_;
 ros::Subscriber body_state_subscriber_;
@@ -61,10 +58,12 @@ std::unique_ptr<WalkActionServer> walk_action_server_;
 std::unique_ptr<BodyPostureActionServer> body_posture_action_server_;
 std::unique_ptr<WholebodyActionServer> wholebody_action_server_;
 std::unique_ptr<PredefinedPostureActionServer> predefined_posture_action_server_;
+std::unique_ptr<QRActionServer> qr_action_server_;
+std::unique_ptr<GripperActionServer> gripper_action_server_;
 
-void cmdPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg);
 void bodyStateCallback(const nav_msgs::Odometry::ConstPtr& msg);
 void NavGollCallback_(const geometry_msgs::PoseStamped::ConstPtr& msg);
+void cmdPoseCallback(const spot_msgs::MobilityParams::ConstPtr& msg);
 void publishJointState();
 void publishBodyPose();
 

@@ -25,6 +25,8 @@ add_action_files(DIRECTORY action FILES
   BodyPosture.action
   Wholebody.action
   PredefinedPosture.action
+  QR.action
+  Gripper.action
 )
 
 # add_service_files(

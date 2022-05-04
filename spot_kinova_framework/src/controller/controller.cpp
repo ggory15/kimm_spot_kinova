@@ -59,8 +59,8 @@ namespace RobotController{
         ee_gain.setOnes();
 
         if (!issimulation_){
-        	posture_gain *= 3.0;
-            ee_gain *= 3.0;
+        	posture_gain *= 20.0;
+            ee_gain *= 20.0;
         }
         else {
         	posture_gain *= 10.0;
@@ -118,6 +118,11 @@ namespace RobotController{
             servoingMode_->set_servoing_mode(k_api::Base::ServoingMode::LOW_LEVEL_SERVOING);
             base_->SetServoingMode(*servoingMode_);
 
+            // kinova_gripper_ = true;
+            // if(kinova_gripper_){
+            //     gripper_command_.set_mode(k_api::Base::GRIPPER_POSITION);
+            // }
+
             state_.kinova.lowlevel_ctrl = false;
             base_->ClearFaults();
         }
@@ -126,21 +131,15 @@ namespace RobotController{
     void SpotKinovaWrapper::kinova_update(){
         if (!issimulation_){
             if (!state_.kinova.lowlevel_ctrl){
-                // int i = 0;
-                // for (auto joint_angle : joint_from_kinova_.joint_angles()) 
-                // {
-                //     state_.kinova.q(i) = joint_angle.value() * M_PI / 180.0;
-                //     i++;
-                // }
-                base_feedback_ = base_cyclic_->RefreshFeedback();
+                  base_feedback_ = base_cyclic_->RefreshFeedback();
                 for (int i=0; i<7; i++){
-                    state_.kinova.q(i) = base_feedback_.actuators(i).position() * M_PI / 180.0;
+                    state_.kinova.q(i) = wrapRadiansFromMinusPiToPi(base_feedback_.actuators(i).position() * M_PI / 180.0);
                     state_.kinova.v(i) = base_feedback_.actuators(i).velocity() * M_PI / 180.0;
                 }
             }
             else{
                 for (int i=0; i<7; i++) {
-                    state_.kinova.q(i) = base_feedback_.actuators(i).position() * M_PI / 180.0;
+                    state_.kinova.q(i) = wrapRadiansFromMinusPiToPi(base_feedback_.actuators(i).position() * M_PI / 180.0);
                     state_.kinova.v(i) = base_feedback_.actuators(i).velocity() * M_PI / 180.0;
                 }
             }
@@ -423,15 +422,17 @@ namespace RobotController{
     }
 
     void SpotKinovaWrapper::init_joint_posture_ctrl(ros::Time time){
-        if (issimulation_){
-            tsid_->removeTask("task-posture");
-            tsid_->removeTask("task-se3");
-            tsid_->addMotionTask(*postureTask_, 1e-5, 0);
+        tsid_->removeTask("task-posture");
+        tsid_->removeTask("task-se3");
+        tsid_->addMotionTask(*postureTask_, 1e-5, 0);
 
-            trajPosture_Cubic_->setInitSample(state_.kinova.q);
-            trajPosture_Cubic_->setDuration(state_.kinova.duration);
-            trajPosture_Cubic_->setStartTime(time.toSec());
-            trajPosture_Cubic_->setGoalSample(state_.kinova.q_ref);  
+        trajPosture_Cubic_->setInitSample(state_.kinova.q);
+        trajPosture_Cubic_->setDuration(state_.kinova.duration);
+        trajPosture_Cubic_->setStartTime(time.toSec());
+        trajPosture_Cubic_->setGoalSample(state_.kinova.q_ref);  
+        
+        if (issimulation_){
+            
         }
         else{
             base_->ClearFaults();
@@ -459,7 +460,8 @@ namespace RobotController{
     
         const HQPData & HQPData = tsid_->computeProblemData(time.toSec(), state_.q, state_.v);       
         state_.v = tsid_->getAccelerations(solver_->solve(HQPData));
-        
+        //state_.kinova.q = pinocchio::integrate(robot_->model(), state_.q, 0.001 * state_.v).segment(7,7);
+
         if (issimulation_){            
             state_.kinova.q = pinocchio::integrate(robot_->model(), state_.q, 0.001 * state_.v).segment(7,7);
         }
@@ -467,7 +469,7 @@ namespace RobotController{
             for(int i = 0; i < 7; i++)
             {
                 base_command_.mutable_actuators(i)->set_position(base_feedback_.actuators(i).position());
-                base_command_.mutable_actuators(i)->set_velocity(state_.v(i+6) *180.0 / M_PI);        		    
+                base_command_.mutable_actuators(i)->set_velocity(state_.v(i+6) *180.0 / M_PI);       		    
             }
             
             base_command_.set_frame_id(base_command_.frame_id() + 1);
@@ -484,31 +486,44 @@ namespace RobotController{
     }
     
     void SpotKinovaWrapper::init_se3_ctrl(ros::Time time){
+        tsid_->removeTask("task-posture");
+        tsid_->removeTask("task-se3");
+        //tsid_->addMotionTask(*postureTask_, 1e-5, 1);
+        tsid_->addMotionTask(*eeTask_, 1, 0);
+
+        state_.kinova.q_ref = state_.kinova.q;
+
+        trajPosture_Cubic_->setInitSample(state_.kinova.q);
+        trajPosture_Cubic_->setDuration(0.1);
+        trajPosture_Cubic_->setStartTime(time.toSec());
+        trajPosture_Cubic_->setGoalSample(state_.kinova.q_ref);   
+
+        trajEE_Cubic_->setStartTime(time.toSec());
+        trajEE_Cubic_->setDuration(state_.kinova.duration);
+        state_.kinova.H_ee_init = state_.kinova.H_ee;
+
+        trajEE_Cubic_->setInitSample(state_.kinova.H_ee);     
+        trajEE_Cubic_->setGoalSample(state_.kinova.H_ee_init);
+        trajEE_Cubic_->setGoalSample(state_.kinova.H_ee_ref);
+
+        Vector6d ee_gain_tmp;
+        ee_gain_tmp.setOnes();
+
+        if (!issimulation_ && state_.spot.orientation_publish){
+            ee_gain_tmp *= 2.0;
+            eeTask_->Kp(ee_gain_tmp);
+            eeTask_->Kd(2.0*eeTask_->Kp().cwiseSqrt());
+        }
+
         if (issimulation_){
-            tsid_->removeTask("task-posture");
-            tsid_->removeTask("task-se3");
-            tsid_->addMotionTask(*postureTask_, 1e-5, 1);
-            tsid_->addMotionTask(*eeTask_, 1, 0);
-
-            state_.kinova.q_ref = state_.kinova.q;
-
-            trajPosture_Cubic_->setInitSample(state_.kinova.q);
-            trajPosture_Cubic_->setDuration(0.1);
-            trajPosture_Cubic_->setStartTime(time.toSec());
-            trajPosture_Cubic_->setGoalSample(state_.kinova.q_ref);   
-
-            trajEE_Cubic_->setStartTime(time.toSec());
-            trajEE_Cubic_->setDuration(state_.kinova.duration);
-            state_.kinova.H_ee_init = state_.kinova.H_ee;
-
-            trajEE_Cubic_->setInitSample(state_.kinova.H_ee);     
-            trajEE_Cubic_->setGoalSample(state_.kinova.H_ee_ref);
+            
         }
         else{
             base_->ClearFaults();
 
             servoingMode_->set_servoing_mode(k_api::Base::ServoingMode::LOW_LEVEL_SERVOING);
             base_->SetServoingMode(*servoingMode_);
+            
             base_feedback_ = base_cyclic_->RefreshFeedback();
             base_command_.clear_actuators();
             for(int i = 0; i < 7; i++)
@@ -520,7 +535,8 @@ namespace RobotController{
             control_mode_message_->set_control_mode(k_api::ActuatorConfig::ControlMode::VELOCITY);
 
             for (int i=0; i<7; i++)
-                actuator_config_->SetControlMode(*control_mode_message_, i+1);
+                actuator_config_->SetControlMode(*control_mode_message_, i+1);    
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));        
         }
     }
     void SpotKinovaWrapper::compute_se3_ctrl(ros::Time time){
@@ -534,14 +550,14 @@ namespace RobotController{
             
         const HQPData & HQPData = tsid_->computeProblemData(time.toSec(), state_.q, state_.v);       
         state_.v = tsid_->getAccelerations(solver_->solve(HQPData));
-        
+               
         if (issimulation_)
             state_.kinova.q = pinocchio::integrate(robot_->model(), state_.q, 0.001 * state_.v).segment(7,7);
         else{
             for(int i = 0; i < 7; i++)
             {
                 base_command_.mutable_actuators(i)->set_position(base_feedback_.actuators(i).position());
-                base_command_.mutable_actuators(i)->set_velocity(state_.v(i+6) *180.0 / M_PI);        		    
+                base_command_.mutable_actuators(i)->set_velocity( (state_.v.segment(6,7)(i) - 0.5 * state_.kinova.v(i))* 180.0 /M_PI );        		    
             }
             
             base_command_.set_frame_id(base_command_.frame_id() + 1);
@@ -555,6 +571,23 @@ namespace RobotController{
 
             base_feedback_ = base_cyclic_->Refresh(base_command_, 0);
         }
+    }
+
+    void SpotKinovaWrapper::done_se3_ctrl(){
+        control_mode_message_ = new k_api::ActuatorConfig::ControlModeInformation();
+        control_mode_message_->set_control_mode(k_api::ActuatorConfig::ControlMode::POSITION);
+        for (int i=0; i<7; i++)
+            actuator_config_->SetControlMode(*control_mode_message_, i+1);
+        
+        servoingMode_->set_servoing_mode(k_api::Base::ServoingMode::SINGLE_LEVEL_SERVOING);
+        base_->SetServoingMode(*servoingMode_);
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+        action_type_ = new k_api::Base::RequestedActionType();
+        action_type_->set_action_type(k_api::Base::REACH_JOINT_ANGLES);                    
+        auto action_list = base_->ReadAllActions(*action_type_);
+        auto action_handle = k_api::Base::ActionHandle();
+        action_handle.set_identifier(0);
     }
 
     void SpotKinovaWrapper::init_body_posture_ctrl(ros::Time time){
@@ -612,5 +645,29 @@ namespace RobotController{
         }
         const auto promise_event = finish_future.get();
     }
+
+    void SpotKinovaWrapper::init_open_gripper(){
+        k_api::Base::GripperCommand gripper_command;
+        gripper_command.set_mode(k_api::Base::GRIPPER_POSITION);
+        auto finger = gripper_command.mutable_gripper()->add_finger();
+        finger->set_finger_identifier(1);
+        finger->set_value(0.0f);
+        base_->SendGripperCommand(gripper_command);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        //std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+    }
+    
+    void SpotKinovaWrapper::init_close_girpper(){
+        k_api::Base::GripperCommand gripper_command;
+        gripper_command.set_mode(k_api::Base::GRIPPER_POSITION);
+        auto finger = gripper_command.mutable_gripper()->add_finger();
+        finger->set_finger_identifier(1);
+        finger->set_value(1.0f);
+        base_->SendGripperCommand(gripper_command);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        //std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+    
 
 }

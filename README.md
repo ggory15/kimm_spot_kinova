@@ -98,3 +98,14 @@ python3 simulation.py
 ```
 you can type "home", "walk", "reach", and so on.
 You can also move spot with kinova on rviz (press 2D Nav Goal in Rviz)
+
+## QuickStart for Real Robot
+Open Terminal (Warning: Please, don't use terminel in Vscode.)
+```
+roslaunch spot_kinova_framework real.launch
+```
+Open Another Terminal, and go to the "/spot_kinova_framework/python_client/" folder
+```
+python3 real.py
+```
+you can type "home", "walk", "reach", and so on.

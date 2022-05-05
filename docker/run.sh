@@ -35,4 +35,4 @@ docker run --gpus all --rm \
 docker run -it --rm -e DISPLAY=$DISPLAY -e QT_X11_NO_MITSHM=1 -v /tmp/.X11-unix:/tmp/.X11-unix:rw  -v /var/run/docker.sock:/var/run/docker.sock -v /$HOME/Docker_Melodic/catkin_ws:/home/user/catkin_ws/ -ti  docker_spot bash 
 docker run -it --rm -e DISPLAY=$DISPLAY -e QT_X11_NO_MITSHM=1 -v /tmp/.X11-unix:/tmp/.X11-unix:rw -ti  docker_spot bash 
 
-docker run -it --rm -e DISPLAY=$DISPLAY -e QT_X11_NO_MITSHM=1 -v /tmp/.X11-unix:/tmp/.X11-unix:rw  -v C:/Docker_Melodic/catkin_ws/build:/home/user/catkin_ws/build -v C:/Docker_Melodic/catkin_ws/devel:/home/user/catkin_ws/devel -ti  docker_spot bash
+docker run -it --rm -e DISPLAY=192.168.112.1:0.0 -e QT_X11_NO_MITSHM=1 -v /tmp/.X11-unix:/tmp/.X11-unix:rw  -v C:/Docker_Melodic/catkin_ws/build:/home/user/catkin_ws/build -v C:/Docker_Melodic/catkin_ws/devel:/home/user/catkin_ws/devel -ti  docker_spot bash

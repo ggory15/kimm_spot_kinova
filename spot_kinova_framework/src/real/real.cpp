@@ -48,9 +48,10 @@ int main(int argc, char **argv)
     body_posture_action_server_ = std::make_unique<BodyPostureActionServer>("/spot_kinova_action/body_posture_control", n_node, ctrl_);
     wholebody_action_server_ = std::make_unique<WholebodyActionServer>("/spot_kinova_action/wholebody_control", n_node, ctrl_);
     predefined_posture_action_server_ = std::make_unique<PredefinedPostureActionServer>("/spot_kinova_action/predefined_posture_control", n_node, ctrl_);
-    qr_action_server_ = std::make_unique<QRActionServer>("/spot_kinova_action/qr_control", n_node, ctrl_);
+    qr_walk_action_server_ = std::make_unique<QRWalkActionServer>("/spot_kinova_action/qr_walk_control", n_node, ctrl_);
     gripper_action_server_ = std::make_unique<GripperActionServer>("/spot_kinova_action/gripper_control", n_node, ctrl_);
-    // ac_ = new actionlib::SimpleActionClient<spot_msgs::TrajectoryAction>("/spot/trajectory", false);
+    qr_pick_action_server_ = std::make_unique<QRPickActionServer>("/spot_kinova_action/qr_pick_control", n_node, ctrl_);
+    se3_array_action_server_ = std::make_unique<SE3ArrayActionServer>("/spot_kinova_action/se3_array_control", n_node, ctrl_);
 
     // Variable Initialize
     time_ = 0.0;
@@ -64,8 +65,10 @@ int main(int argc, char **argv)
         body_posture_action_server_->compute(ros::Time::now());
         wholebody_action_server_->compute(ros::Time::now());
         predefined_posture_action_server_->compute(ros::Time::now());
-        qr_action_server_->compute(ros::Time::now());
+        qr_walk_action_server_->compute(ros::Time::now());
         gripper_action_server_->compute(ros::Time::now());
+        qr_pick_action_server_->compute(ros::Time::now());
+        se3_action_server_->compute(ros::Time::now());
         
         publishJointState();
         publishBodyPose();

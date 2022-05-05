@@ -1,13 +1,13 @@
-#include <spot_kinova_framework/servers/qr_action_server.hpp>
+#include <spot_kinova_framework/servers/qr_walk_action_server.hpp>
 #include <Eigen/Core>
 
 using namespace Eigen;
 
-QRActionServer::QRActionServer(std::string name, ros::NodeHandle &nh, std::shared_ptr<RobotController::SpotKinovaWrapper> &mu)
+QRWalkActionServer::QRWalkActionServer(std::string name, ros::NodeHandle &nh, std::shared_ptr<RobotController::SpotKinovaWrapper> &mu)
 : ActionServerBase(name,nh,mu), as_(nh,name,false)
 {
-	as_.registerGoalCallback(boost::bind(&QRActionServer::goalCallback, this));
-	as_.registerPreemptCallback(boost::bind(&QRActionServer::preemptCallback, this));
+	as_.registerGoalCallback(boost::bind(&QRWalkActionServer::goalCallback, this));
+	as_.registerPreemptCallback(boost::bind(&QRWalkActionServer::preemptCallback, this));
   as_.start();
 
   ac_ = new actionlib::SimpleActionClient<spot_msgs::TrajectoryAction>("/spot/trajectory", false);
@@ -15,27 +15,28 @@ QRActionServer::QRActionServer(std::string name, ros::NodeHandle &nh, std::share
   qr_recieved_ = false;
 }
 
-void QRActionServer::goalCallback()
+void QRWalkActionServer::goalCallback()
 {
     feedback_header_stamp_ = 0;
     goal_ = as_.acceptNewGoal();
+    qr_recieved_ = false;
     
     string topic_name = goal_->topic_name;
-    qr_subscriber_ = nh_.subscribe("/" + topic_name, 1, &QRActionServer::qrCallback, this);
+    qr_subscriber_ = nh_.subscribe("/" + topic_name, 1, &QRWalkActionServer::qrCallback, this);
     
     start_time_ = ros::Time::now();
     mode_change_ = true;
     control_running_ = true;  
 }
 
-void QRActionServer::preemptCallback()
+void QRWalkActionServer::preemptCallback()
 {
   ROS_INFO("[%s] Preempted", action_name_.c_str());
   as_.setPreempted();
   control_running_ = false;
 }
 
-bool QRActionServer::compute(ros::Time ctime)
+bool QRWalkActionServer::compute(ros::Time ctime)
 {
   if (!control_running_)
     return false;
@@ -106,6 +107,7 @@ bool QRActionServer::compute(ros::Time ctime)
     }
     if (ac_->getResult() ){
       setSucceeded();
+      qr_subscriber_.shutdown();
     return true;
     }
   }
@@ -113,6 +115,7 @@ bool QRActionServer::compute(ros::Time ctime)
 
   if (ctime.toSec() - start_time_.toSec() > 20.0){
     setAborted();
+    qr_subscriber_.shutdown();
     return false;
   }
 
@@ -120,26 +123,26 @@ bool QRActionServer::compute(ros::Time ctime)
 }
 
 
-void QRActionServer::signalAbort(bool is_aborted)
+void QRWalkActionServer::signalAbort(bool is_aborted)
 {
   setAborted();  
 }
 
-void QRActionServer::setSucceeded()
+void QRWalkActionServer::setSucceeded()
 {
   as_.setSucceeded(result_);
   if (!mu_->simulation())
     mu_->done_se3_ctrl();
   control_running_ = false;
 }
-void QRActionServer::setAborted()
+void QRWalkActionServer::setAborted()
 {
   as_.setAborted();
   if (!mu_->simulation())
     mu_->done_se3_ctrl();
   control_running_ = false;
 }
-void QRActionServer::qrCallback(const geometry_msgs::Pose::ConstPtr& msg){
+void QRWalkActionServer::qrCallback(const geometry_msgs::Pose::ConstPtr& msg){
     qr_recieved_ = true;
     qr_msg_ = geometry_msgs::Pose();
 

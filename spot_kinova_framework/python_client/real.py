@@ -43,8 +43,8 @@ class ControlSuiteShell(cmd.Cmd):
         self.wholebody_ctrl_client.wait_for_server()
         self.predefined_posture_ctrl_client = actionlib.SimpleActionClient('/spot_kinova_action/predefined_posture_control', spot_kinova_msgs.msg.PredefinedPostureAction)
         self.predefined_posture_ctrl_client.wait_for_server()
-        self.qr_ctrl_client = actionlib.SimpleActionClient('/spot_kinova_action/qr_control', spot_kinova_msgs.msg.QRAction)
-        self.qr_ctrl_client.wait_for_server()
+        self.qr_walk_ctrl_client = actionlib.SimpleActionClient('/spot_kinova_action/qr_walk_control', spot_kinova_msgs.msg.QRWalkAction)
+        self.qr_walk_ctrl_client.wait_for_server()
         self.gripper_ctrl_client = actionlib.SimpleActionClient('/spot_kinova_action/gripper_control', spot_kinova_msgs.msg.GripperAction)
         self.gripper_ctrl_client.wait_for_server()
 
@@ -93,8 +93,8 @@ class ControlSuiteShell(cmd.Cmd):
         goal = spot_kinova_msgs.msg.SE3Goal
         goal.duration = 3.0
         goal.target_pose = Pose()
-        goal.target_pose.position.x = +0.1
-        goal.target_pose.position.y = 0.0
+        goal.target_pose.position.x = 0.1
+        goal.target_pose.position.y = 0.1
         goal.target_pose.position.z = 0.0
 
         goal.target_pose.orientation.x =  0.0
@@ -291,14 +291,14 @@ class ControlSuiteShell(cmd.Cmd):
             #         time.sleep(1)
             #         self.do_bodyflat(arg)
 
-    def do_qr(self, arg):
-        'Go to the qr position'
+    def do_qrwalk(self, arg):
+        'Walk toward the qr position'
         goal = spot_kinova_msgs.msg.QRGoal
         goal.topic_name = "aruco_markers_pose1"
 
         print ("anction sent")
-        self.qr_ctrl_client.send_goal(goal)
-        self.qr_ctrl_client.wait_for_result()
+        self.qr_walk_ctrl_client.send_goal(goal)
+        self.qr_walk_ctrl_client.wait_for_result()
     
     def do_open(self, arg):
         'Open Gripper'

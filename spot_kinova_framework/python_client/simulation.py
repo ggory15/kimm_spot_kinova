@@ -4,7 +4,8 @@ import rospy
 import actionlib
 import spot_kinova_msgs.msg
 from sensor_msgs.msg import JointState
-from geometry_msgs.msg import Pose, PoseStamped
+from geometry_msgs.msg import Pose, PoseStamped, PoseArray
+from std_msgs.msg import Float32MultiArray
 import numpy as np
 import pinocchio as se3
 import importlib, pkgutil
@@ -39,6 +40,85 @@ class ControlSuiteShell(cmd.Cmd):
         self.body_posture_ctrl_client.wait_for_server()
         self.wholebody_ctrl_client = actionlib.SimpleActionClient('/spot_kinova_action/wholebody_control', spot_kinova_msgs.msg.WholebodyAction)
         self.wholebody_ctrl_client.wait_for_server()
+        self.qr_pick_ctrl_client = actionlib.SimpleActionClient('/spot_kinova_action/qr_pick_control', spot_kinova_msgs.msg.QRPickAction)
+        self.qr_pick_ctrl_client.wait_for_server()
+        self.se3_array_ctrl_client = actionlib.SimpleActionClient('/spot_kinova_action/se3_array_control', spot_kinova_msgs.msg.SE3ArrayAction)
+        self.se3_array_ctrl_client.wait_for_server()
+
+    def do_qrpick(self, arg):
+        goal = spot_kinova_msgs.msg.QRPickGoal
+
+        goal.topic_name = "qr_target_pose"
+        goal.target_pose = Pose()
+
+        goal.target_pose.position.x = 0.2
+        goal.target_pose.position.y = 0.1
+        goal.target_pose.position.z = 0.0
+        goal.target_pose.orientation.x =  0.0
+        goal.target_pose.orientation.y = 0
+        goal.target_pose.orientation.z = 0.707
+        goal.target_pose.orientation.w = 0.707
+
+        goal.duration = 3.0
+        print ("action sent")
+
+        self.qr_pick_ctrl_client.send_goal(goal)
+        
+        self.qr_pick_ctrl_client.wait_for_result()
+        if (self.qr_pick_ctrl_client.get_result()):
+            print ("action succeed")
+        else:
+            print ("action failed")
+    
+    def do_pickup(self, arg):
+        goal = spot_kinova_msgs.msg.SE3ArrayGoal
+
+        goal.relative = True
+        goal.target_poses = PoseArray()
+        pose_se = Pose()   
+        pose_se.position.x = 0.0
+        pose_se.position.y = 0.0
+        pose_se.position.z = 0.2
+        pose_se.orientation.x =  0.0
+        pose_se.orientation.y = 0.0
+        pose_se.orientation.z = 0.0
+        pose_se.orientation.w = 1.0
+        goal.target_poses.poses.append(pose_se)
+
+        pose_se2 = Pose()
+        pose_se2.position.x = 0.0
+        pose_se2.position.y = -0.6
+        pose_se2.position.z = 0.0
+        pose_se2.orientation.x =  0.0
+        pose_se2.orientation.y = 0.0
+        pose_se2.orientation.z = 1.0
+        pose_se2.orientation.w = 0.0
+        goal.target_poses.poses.append(pose_se2)
+
+        pose_se2 = Pose()
+        pose_se2.position.x = 0.0
+        pose_se2.position.y = 0.0
+        pose_se2.position.z = -0.2
+        pose_se2.orientation.x =  0.0
+        pose_se2.orientation.y = 0.0
+        pose_se2.orientation.z = 0.0
+        pose_se2.orientation.w = 1.0
+        goal.target_poses.poses.append(pose_se2)
+        
+        goal.durations = Float32MultiArray()
+        goal.durations.data.append(2.0)
+        goal.durations.data.append(3.0)
+        goal.durations.data.append(4.0)
+        print ("action sent")
+
+        self.se3_array_ctrl_client.send_goal(goal)
+        
+        self.se3_array_ctrl_client.wait_for_result()
+        if (self.se3_array_ctrl_client.get_result()):
+            print ("action succeed")
+        else:
+            print ("action failed")
+
 
     def do_home(self, arg):
         'Go to the home position using joint posture ctrl'
@@ -47,7 +127,7 @@ class ControlSuiteShell(cmd.Cmd):
         goal.target_joints = JointState()
         goal.target_joints.position = np.array([0.0, -40.0 / 180.0 * 3.14, 3.14, -100 / 180.0 * 3.14, 0, 60. / 180. * 3.14, 1.57])
         
-        print ("anction sent")
+        print ("action sent")
         self.joint_ctrl_client.send_goal(goal)
         self.joint_ctrl_client.wait_for_result()
         if (self.joint_ctrl_client.get_result()):
@@ -62,7 +142,7 @@ class ControlSuiteShell(cmd.Cmd):
         goal.target_joints = JointState()
         goal.target_joints.position = np.array([0.0, -2.0944, 3.14, -2.443, 0,0.3490, 1.57])
 
-        print ("anction sent")
+        print ("action sent")
         self.joint_ctrl_client.send_goal(goal)
         self.joint_ctrl_client.wait_for_result()
         if (self.joint_ctrl_client.get_result()):
@@ -76,18 +156,16 @@ class ControlSuiteShell(cmd.Cmd):
     def do_ready(self, arg):
         'Go to the folding position using joint posture ctrl'
         goal = spot_kinova_msgs.msg.JointPostureGoal
-        goal.duration = 2.0
+        goal.duration = 0.5
         goal.target_joints = JointState()
         goal.target_joints.position = np.array([0.0, -90.0, 180.0, -90.0, 0, -90.0, 90.0]) * 3.14/180.0
 
-        print ("anction sent")
+        print ("action sent")
         self.joint_ctrl_client.send_goal(goal)
         self.joint_ctrl_client.wait_for_result()
         if (self.joint_ctrl_client.get_result()):
             print ("action succeed")
-            self.do_body(True)
-            self.do_walk(True)
-
+        
         else:
             print ("action failed")
 
@@ -95,18 +173,18 @@ class ControlSuiteShell(cmd.Cmd):
         goal = spot_kinova_msgs.msg.SE3Goal
         goal.duration = 2.0
         goal.target_pose = Pose()
-        goal.target_pose.position.x = -0.1
-        goal.target_pose.position.y = -0.1
+        goal.target_pose.position.x = 0.1
+        goal.target_pose.position.y = 0.1
         goal.target_pose.position.z = 0.0
 
-        goal.target_pose.orientation.x =  0.258819
+        goal.target_pose.orientation.x = 0.258819
         goal.target_pose.orientation.y = 0
         goal.target_pose.orientation.z = 0.
         goal.target_pose.orientation.w = 0.9659258
 
         goal.relative = True
 
-        print ("anction sent")
+        print ("action sent")
         self.se3_ctrl_client.send_goal(goal)
         self.se3_ctrl_client.wait_for_result()
         if (self.se3_ctrl_client.get_result()):
@@ -142,7 +220,7 @@ class ControlSuiteShell(cmd.Cmd):
             goal.target_pose.pose.orientation.z = 0
             goal.target_pose.pose.orientation.w = 1
 
-        print ("anction sent")
+        print ("action sent")
         self.walk_client.send_goal(goal)
         self.walk_client.wait_for_result()
 
@@ -167,9 +245,7 @@ class ControlSuiteShell(cmd.Cmd):
             goal.target_pose.orientation.z = 0.
             goal.target_pose.orientation.w = 1.0
 
-        
-
-        print ("anction sent")
+        print ("action sent")
         self.body_posture_ctrl_client.send_goal(goal)
         self.body_posture_ctrl_client.wait_for_result()
         if (self.body_posture_ctrl_client.get_result()):
@@ -199,7 +275,7 @@ class ControlSuiteShell(cmd.Cmd):
 
         goal.relative = True
         
-        print ("anction sent")
+        print ("action sent")
         self.wholebody_ctrl_client.send_goal(goal)
         self.wholebody_ctrl_client.wait_for_result()
         if (self.wholebody_ctrl_client.get_result()):

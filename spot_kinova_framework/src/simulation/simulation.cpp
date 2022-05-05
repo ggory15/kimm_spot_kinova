@@ -45,6 +45,8 @@ int main(int argc, char **argv)
     walk_action_server_ = std::make_unique<WalkSimulationActionServer>("/spot_kinova_action/move_base", n_node, ctrl_);
     body_posture_action_server_ = std::make_unique<BodyPostureActionServer>("/spot_kinova_action/body_posture_control", n_node, ctrl_);
     wholebody_action_server_ = std::make_unique<WholebodyActionServer>("/spot_kinova_action/wholebody_control", n_node, ctrl_);
+    qr_pick_action_server_ = std::make_unique<QRPickActionServer>("/spot_kinova_action/qr_pick_control", n_node, ctrl_);
+    se3_array_action_server_ = std::make_unique<SE3ArrayActionServer>("/spot_kinova_action/se3_array_control", n_node, ctrl_);
 
     // Variable Initialize
     time_ = 0.0;
@@ -57,6 +59,8 @@ int main(int argc, char **argv)
         walk_action_server_->compute(ros::Time::now());
         body_posture_action_server_->compute(ros::Time::now());
         wholebody_action_server_->compute(ros::Time::now());
+        qr_pick_action_server_->compute(ros::Time::now());
+        se3_array_action_server_->compute(ros::Time::now());
 
         publishJointState();
         publishBodyPose();

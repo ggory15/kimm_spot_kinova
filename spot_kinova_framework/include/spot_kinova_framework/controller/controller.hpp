@@ -62,8 +62,12 @@ typedef struct Kinova_State {
     SE3 H_ee_ref;
     SE3 H_ee_init;
     SE3 H_ee;
+    Vector3d ee_offset;
+    std::vector<SE3> H_ee_ref_array;
+    std::vector<double> duration_array;
     double duration;
     bool lowlevel_ctrl;
+    bool isrelative;
 } kinova_state;
 typedef struct Spot_State {
     Vector3d position;
@@ -93,15 +97,15 @@ namespace RobotController{
             ~SpotKinovaWrapper(){};
 
             void initialize();
-            void ctrl_update(const int& ); 
             void kinova_update(); 
             void spot_update(Vector3d& x, tf::Quaternion& quat, tf::Quaternion& pose, tf::Quaternion& nav); 
-            void compute(const double &); 
             
             void init_joint_posture_ctrl(ros::Time time);
             void compute_joint_posture_ctrl(ros::Time time);
             void init_se3_ctrl(ros::Time time);
             void compute_se3_ctrl(ros::Time time);
+            void init_se3_array_ctrl(ros::Time time);
+            void compute_se3_array_ctrl(ros::Time time);
             void init_body_posture_ctrl(ros::Time time);
             void compute_body_posture_ctrl(ros::Time time);
             void done_se3_ctrl();
@@ -110,9 +114,6 @@ namespace RobotController{
             void init_open_gripper();
             void init_close_girpper();
 
-            int ctrltype(){
-                return ctrl_mode_;
-            }
             State & state(){
                 return state_;
             }
@@ -130,7 +131,10 @@ namespace RobotController{
             
             State state_;
             double time_;
+            double stime_;
             int ctrl_mode_;
+            int array_cnt_;
+            bool isfinished_;
 
             std::shared_ptr<spotkinova::robots::RobotWrapper> robot_;
             pinocchio::Model model_;

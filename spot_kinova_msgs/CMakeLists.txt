@@ -25,8 +25,10 @@ add_action_files(DIRECTORY action FILES
   BodyPosture.action
   Wholebody.action
   PredefinedPosture.action
-  QR.action
+  QRWalk.action
+  QRPick.action
   Gripper.action
+  SE3Array.action
 )
 
 # add_service_files(

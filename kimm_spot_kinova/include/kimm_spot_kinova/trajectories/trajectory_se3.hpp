@@ -126,6 +126,9 @@ namespace spotkinova{
 			void setStartTime(const double & time);
 			void setMaxVelocity(const Eigen::Vector3d  &  MaxVel);
 			void setMaxAcceleration(const Eigen::Vector3d  &  MaxAcc);
+			double getDuration(){
+				return m_duration;
+			}
 
 			double cubic(double time,    ///< Current time
                       double time_0,  ///< Start time

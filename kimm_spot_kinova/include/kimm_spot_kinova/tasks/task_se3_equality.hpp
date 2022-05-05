@@ -28,7 +28,8 @@ namespace spotkinova
 
       TaskSE3Equality(const std::string & name,
                       RobotWrapper & robot,
-                      const std::string & frameName);
+                      const std::string & frameName,
+                      const Eigen::Vector3d & offset);
 
       int dim() const;
 
@@ -122,6 +123,7 @@ namespace spotkinova
       bool m_local_frame;
       bool m_mobile;
       bool m_spot;
+      Eigen::Vector3d m_offset;
     };
 
   }

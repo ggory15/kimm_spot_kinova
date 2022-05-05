@@ -177,6 +177,7 @@ namespace spotkinova
       m_calc = false;
       setMaxVelocity(MaxVel);
       setMaxAcceleration(MaxAcc);
+      m_duration = 999.0;
     }
     unsigned int TrajectorySE3Timeopt::size() const
     {
@@ -199,7 +200,7 @@ namespace spotkinova
 
         m_init = m_SE3_waypoints.front();
         m_goal = m_SE3_waypoints.back();
-        this->setReference(m_SE3_waypoints[0]);       
+        this->setReference(m_init);       
         
       }
       if (m_traj->isValid()){

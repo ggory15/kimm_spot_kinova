@@ -19,30 +19,17 @@ void WholebodyActionServer::goalCallback()
     
     mode_change_ = false;
     isrelative_ = goal_->relative;
+    mu_->state().kinova.isrelative = isrelative_;
 
     if (!mu_->simulation())
       mu_->state().kinova.lowlevel_ctrl = true;
       
-
     //for arm
-    if (!isrelative_){
-      Eigen::Vector3d pos(goal_->target_ee_pose.position.x, goal_->target_ee_pose.position.y, goal_->target_ee_pose.position.z);
-      Eigen::Quaterniond quat(goal_->target_ee_pose.orientation.w, goal_->target_ee_pose.orientation.x, goal_->target_ee_pose.orientation.y, goal_->target_ee_pose.orientation.z);
-      SE3 oMi_ref(quat.toRotationMatrix(), pos);
-      mu_->state().kinova.H_ee_ref = oMi_ref;
-    }
-    else{
-      Eigen::Quaterniond recieve_quat_eigen(goal_->target_ee_pose.orientation.w, goal_->target_ee_pose.orientation.x, goal_->target_ee_pose.orientation.y,goal_->target_ee_pose.orientation.z);
-      Eigen::Vector3d pos(goal_->target_ee_pose.position.x + mu_->state().kinova.H_ee.translation()(0),
-                         goal_->target_ee_pose.position.y + mu_->state().kinova.H_ee.translation()(1),
-                         goal_->target_ee_pose.position.z + + mu_->state().kinova.H_ee.translation()(2));
-      Eigen::Quaterniond current_quat_eigen(mu_->state().kinova.H_ee.rotation());
-
-      SE3 oMi_ref( (recieve_quat_eigen * current_quat_eigen ).toRotationMatrix(), pos);
-      mu_->state().kinova.H_ee_ref = oMi_ref;
-    }
+    Eigen::Vector3d pos(goal_->target_ee_pose.position.x, goal_->target_ee_pose.position.y, goal_->target_ee_pose.position.z);
+    Eigen::Quaterniond quat(goal_->target_ee_pose.orientation.w, goal_->target_ee_pose.orientation.x, goal_->target_ee_pose.orientation.y, goal_->target_ee_pose.orientation.z);
+    SE3 oMi_ref(quat.toRotationMatrix(), pos);
+    mu_->state().kinova.H_ee_ref = oMi_ref;  
     mu_->state().kinova.duration = goal_->duration;
-
     
     // for spot
     mu_->state().spot.duration = goal_->duration;

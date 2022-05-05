@@ -14,12 +14,14 @@ namespace spotkinova
 
     TaskSE3Equality::TaskSE3Equality(const std::string & name,
                                      RobotWrapper & robot,
-                                     const std::string & frameName):
+                                     const std::string & frameName,
+                                     const Eigen::Vector3d & offset):
       TaskMotion(name, robot),
       m_frame_name(frameName),
       m_constraint(name, 6, 7),
       m_ref(12, 6),
-      m_spot(false)
+      m_spot(false),
+      m_offset(offset)
     {
       if (robot.na() > 7)
         m_spot=true;
@@ -156,11 +158,28 @@ namespace spotkinova
                                                     ConstRefVector ,
                                                     Data & data)
     {
-      SE3 oMi;
+      SE3 oMi, oMi_prev;
       Motion v_frame;
-      m_robot.framePosition(data, m_frame_id, oMi);
+      m_robot.framePosition(data, m_frame_id, oMi_prev);
       m_robot.frameVelocity(data, m_frame_id, v_frame);
-      m_robot.frameJacobianLocal(data, m_frame_id, m_J); 
+      m_robot.frameJacobianLocal(data, m_frame_id, m_J);
+
+      SE3 T_offset;
+      T_offset.setIdentity();
+      T_offset.translation(m_offset); 
+      oMi = oMi_prev * T_offset;
+      Eigen::MatrixXd Adj_mat(6,6);
+      Adj_mat.setIdentity();
+      Eigen::Vector3d offset_local;
+      offset_local = m_offset; 
+
+      Adj_mat(0, 4) = -offset_local(2);
+      Adj_mat(0, 5) = offset_local(1);
+      Adj_mat(1, 3) = offset_local(2);
+      Adj_mat(1, 5) = -offset_local(0);
+      Adj_mat(2, 3) = -offset_local(1);
+      Adj_mat(2, 4) = offset_local(0);
+      Adj_mat.topRightCorner(3,3) = -Adj_mat.topRightCorner(3,3);
 
       if (m_spot){
         m_J.topLeftCorner(6, 6).setZero();
@@ -175,7 +194,11 @@ namespace spotkinova
       m_p_error_vec = m_p_error.toVector();
       m_v_error =  m_wMl.actInv(m_v_ref) - v_frame; 
       m_a_des = m_Kp.cwiseProduct(m_p_error_vec);
-     
+
+      v_frame.linear() = v_frame.linear() + Adj_mat.topRightCorner(3,3) * v_frame.angular();
+      m_J = Adj_mat * m_J;
+
+      
       int idx = 0;
       for (int i = 0; i < 6; i++) {
         if (m_mask(i) != 1.) continue;

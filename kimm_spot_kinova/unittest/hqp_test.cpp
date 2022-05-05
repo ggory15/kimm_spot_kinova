@@ -158,7 +158,7 @@ int main(int argc, char **argv)
     postureTask->Kp(Vector7::Ones() * 10.0);
     postureTask->Kd(2.0*postureTask->Kp().cwiseSqrt());
 
-    eeTask = std::make_shared<TaskSE3Equality>("task-se3", *robot, "joint_7");
+    eeTask = std::make_shared<TaskSE3Equality>("task-se3", *robot, "joint_7", Vector3d(0,0,0));
     eeTask->Kp(Vector::Ones(6) * 10.);
     eeTask->Kd(2.0*eeTask->Kp().cwiseSqrt());
 

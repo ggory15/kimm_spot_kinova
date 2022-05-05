@@ -28,8 +28,10 @@
 #include <spot_kinova_framework/servers/body_posture_action_server.hpp>
 #include <spot_kinova_framework/servers/wholebody_action_server.hpp>
 #include <spot_kinova_framework/servers/predefined_posture_action_server.hpp>
-#include <spot_kinova_framework/servers/qr_action_server.hpp>
+#include <spot_kinova_framework/servers/qr_walk_action_server.hpp>
 #include <spot_kinova_framework/servers/gripper_action_server.hpp>
+#include <spot_kinova_framework/servers/qr_pick_action_server.hpp>
+#include <spot_kinova_framework/servers/se3_array_action_server.hpp>
 #include "spot_msgs/MobilityParams.h"
 
 using namespace Eigen;
@@ -56,8 +58,11 @@ std::unique_ptr<WalkActionServer> walk_action_server_;
 std::unique_ptr<BodyPostureActionServer> body_posture_action_server_;
 std::unique_ptr<WholebodyActionServer> wholebody_action_server_;
 std::unique_ptr<PredefinedPostureActionServer> predefined_posture_action_server_;
-std::unique_ptr<QRActionServer> qr_action_server_;
+std::unique_ptr<QRWalkActionServer> qr_walk_action_server_;
 std::unique_ptr<GripperActionServer> gripper_action_server_;
+std::unique_ptr<QRPickActionServer> qr_pick_action_server_;
+std::unique_ptr<SE3ArrayActionServer> se3_array_action_server_;
+
 
 void bodyStateCallback(const nav_msgs::Odometry::ConstPtr& msg);
 void cmdPoseCallback(const spot_msgs::MobilityParams::ConstPtr& msg);

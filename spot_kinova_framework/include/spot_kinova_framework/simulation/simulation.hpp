@@ -27,6 +27,8 @@
 #include <spot_kinova_framework/servers/walk_simulation_action_server.hpp>
 #include <spot_kinova_framework/servers/body_posture_action_server.hpp>
 #include <spot_kinova_framework/servers/wholebody_action_server.hpp>
+#include <spot_kinova_framework/servers/qr_pick_action_server.hpp>
+#include <spot_kinova_framework/servers/se3_array_action_server.hpp>
 
 using namespace Eigen;
 
@@ -49,6 +51,9 @@ std::unique_ptr<SE3ActionServer> se3_action_server_;
 std::unique_ptr<WalkSimulationActionServer> walk_action_server_;
 std::unique_ptr<BodyPostureActionServer> body_posture_action_server_;
 std::unique_ptr<WholebodyActionServer> wholebody_action_server_;
+std::unique_ptr<QRPickActionServer> qr_pick_action_server_;
+std::unique_ptr<SE3ArrayActionServer> se3_array_action_server_;
+
 
 void cmdPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg);
 void bodyStateCallback(const nav_msgs::Odometry::ConstPtr& msg);

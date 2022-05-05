@@ -52,7 +52,8 @@ namespace RobotController{
         data_ = tsid_->data();
 
         postureTask_ = std::make_shared<TaskJointPosture>("task-posture", *robot_);
-        eeTask_ = std::make_shared<TaskSE3Equality>("task-se3", *robot_, "joint_7");
+        state_.kinova.ee_offset = Vector3d(0, 0, -0.1);
+        eeTask_ = std::make_shared<TaskSE3Equality>("task-se3", *robot_, "joint_7", state_.kinova.ee_offset);
         Vector7d posture_gain;
         Vector6d ee_gain;
         posture_gain.setOnes();
@@ -142,7 +143,10 @@ namespace RobotController{
         state_.q.segment(7, 7) = state_.kinova.q; 
         robot_->computeAllTerms(data_, state_.q, state_.v);
         state_.v.setZero();
-        state_.kinova.H_ee = robot_->position(data_, robot_->model().getJointId("joint_7"));
+        SE3 tf_identity;
+        tf_identity.setIdentity();
+        tf_identity.translation() = state_.kinova.ee_offset;
+        state_.kinova.H_ee = robot_->position(data_, robot_->model().getJointId("joint_7")) * tf_identity;
     }
 
     void SpotKinovaWrapper::spot_update(Vector3d& x, tf::Quaternion& quat, tf::Quaternion& pose, tf::Quaternion& nav){
@@ -158,12 +162,6 @@ namespace RobotController{
         state_.spot.nav = nav;
     }
 
-    void SpotKinovaWrapper::ctrl_update(const int& msg){
-        ctrl_mode_ = msg;
-        mode_change_ = true;
-        if (!issimulation_)
-            base_->ClearFaults();
-    }
 
     void SpotKinovaWrapper::init_joint_posture_ctrl(ros::Time time){
         tsid_->removeTask("task-posture");
@@ -244,10 +242,13 @@ namespace RobotController{
 
         trajEE_Cubic_->setStartTime(time.toSec());
         trajEE_Cubic_->setDuration(state_.kinova.duration);
-        state_.kinova.H_ee_init = state_.kinova.H_ee;
 
         trajEE_Cubic_->setInitSample(state_.kinova.H_ee);     
-        trajEE_Cubic_->setGoalSample(state_.kinova.H_ee_init);
+        if (state_.kinova.isrelative){
+            Eigen::Quaterniond recieve_quat_eigen(state_.q(6), state_.q(3), state_.q(4), state_.q(5));
+            state_.kinova.H_ee_ref.translation() = recieve_quat_eigen.toRotationMatrix() * state_.kinova.H_ee_ref.translation() + state_.kinova.H_ee.translation();
+            state_.kinova.H_ee_ref.rotation() = recieve_quat_eigen.toRotationMatrix()*state_.kinova.H_ee_ref.rotation() * state_.kinova.H_ee.rotation();
+        }
         trajEE_Cubic_->setGoalSample(state_.kinova.H_ee_ref);
 
         Vector6d ee_gain_tmp;
@@ -411,6 +412,134 @@ namespace RobotController{
         base_->SendGripperCommand(gripper_command);
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         //std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+
+    void SpotKinovaWrapper::init_se3_array_ctrl(ros::Time time){
+        tsid_->removeTask("task-posture");
+        tsid_->removeTask("task-se3");
+        //tsid_->addMotionTask(*postureTask_, 1e-5, 1);
+        tsid_->addMotionTask(*eeTask_, 1, 0);
+
+        state_.kinova.q_ref = state_.kinova.q;
+
+        trajPosture_Cubic_->setInitSample(state_.kinova.q);
+        trajPosture_Cubic_->setDuration(0.1);
+        trajPosture_Cubic_->setStartTime(time.toSec());
+        trajPosture_Cubic_->setGoalSample(state_.kinova.q_ref);   
+        
+        trajEE_Cubic_->setStartTime(time.toSec());
+        trajEE_Cubic_->setDuration(state_.kinova.duration_array[0]);
+        state_.kinova.H_ee_init = state_.kinova.H_ee;
+        stime_ = time.toSec();
+        isfinished_ = false;
+        array_cnt_ = 0;
+
+        trajEE_Cubic_->setInitSample(state_.kinova.H_ee);     
+        state_.kinova.H_ee_ref = state_.kinova.H_ee_ref_array[0];
+        state_.kinova.H_ee_init = state_.kinova.H_ee;
+
+        if (state_.kinova.isrelative){
+            Eigen::Quaterniond recieve_quat_eigen(state_.q(6), state_.q(3), state_.q(4), state_.q(5));
+            state_.kinova.H_ee_ref.translation() = recieve_quat_eigen.toRotationMatrix() * state_.kinova.H_ee_ref_array[array_cnt_].translation() + state_.kinova.H_ee_init.translation();
+            state_.kinova.H_ee_ref.rotation() = recieve_quat_eigen.toRotationMatrix()* state_.kinova.H_ee_ref_array[array_cnt_].rotation() * state_.kinova.H_ee_init.rotation();
+        }
+        trajEE_Cubic_->setGoalSample(state_.kinova.H_ee_ref);
+                
+        Vector6d ee_gain_tmp;
+        ee_gain_tmp.setOnes();
+
+        if (!issimulation_ && state_.spot.orientation_publish){
+            ee_gain_tmp *= 2.0;
+            eeTask_->Kp(ee_gain_tmp);
+            eeTask_->Kd(2.0*eeTask_->Kp().cwiseSqrt());
+        }
+
+        if (issimulation_){
+            
+        }
+        else{
+            base_->ClearFaults();
+
+            servoingMode_->set_servoing_mode(k_api::Base::ServoingMode::LOW_LEVEL_SERVOING);
+            base_->SetServoingMode(*servoingMode_);
+            
+            base_feedback_ = base_cyclic_->RefreshFeedback();
+            base_command_.clear_actuators();
+            for(int i = 0; i < 7; i++)
+            {
+                base_command_.add_actuators()->set_position(base_feedback_.actuators(i).position());
+            }
+            base_feedback_ = base_cyclic_->Refresh(base_command_);
+            control_mode_message_ = new k_api::ActuatorConfig::ControlModeInformation();
+            control_mode_message_->set_control_mode(k_api::ActuatorConfig::ControlMode::VELOCITY);
+
+            for (int i=0; i<7; i++)
+                actuator_config_->SetControlMode(*control_mode_message_, i+1);    
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));        
+        }
+    }        
+    void SpotKinovaWrapper::compute_se3_array_ctrl(ros::Time time){
+        trajPosture_Cubic_->setCurrentTime(time.toSec());
+        samplePosture_ = trajPosture_Cubic_->computeNext();
+        postureTask_->setReference(samplePosture_);
+        
+        int array_size = state_.kinova.duration_array.size();
+
+        if ( (time.toSec() - stime_) >= state_.kinova.duration_array[array_cnt_] && array_cnt_ < array_size){     
+            stime_ = time.toSec(); 
+            array_cnt_++;
+
+            if (array_cnt_ < array_size){
+                trajEE_Cubic_->setStartTime(stime_);
+                trajEE_Cubic_->setDuration(state_.kinova.duration_array[array_cnt_]);
+                trajEE_Cubic_->setInitSample(state_.kinova.H_ee);     
+                state_.kinova.H_ee_ref = state_.kinova.H_ee_ref_array[array_cnt_];
+                if (state_.kinova.isrelative){
+                    Eigen::Quaterniond recieve_quat_eigen(state_.q(6), state_.q(3), state_.q(4), state_.q(5));
+                    Eigen::Vector3d pos_des;
+                    Eigen::Matrix3d rot_des;
+                    pos_des.setZero();
+                    rot_des.setIdentity();
+                    for (int i=0; i<array_cnt_; i++){
+                        pos_des += state_.kinova.H_ee_ref_array[i+1].translation();
+                        rot_des *= state_.kinova.H_ee_ref_array[i+1].rotation();
+                    }
+                    state_.kinova.H_ee_ref.translation() = recieve_quat_eigen.toRotationMatrix() * pos_des + state_.kinova.H_ee_init.translation();
+                    state_.kinova.H_ee_ref.rotation() = recieve_quat_eigen.toRotationMatrix()* rot_des * state_.kinova.H_ee_init.rotation();
+                }
+                
+                trajEE_Cubic_->setGoalSample(state_.kinova.H_ee_ref);    
+            }            
+        }
+
+        
+        trajEE_Cubic_->setCurrentTime(time.toSec());
+        sampleEE_ = trajEE_Cubic_->computeNext();
+        eeTask_->setReference(sampleEE_);
+           
+        const HQPData & HQPData = tsid_->computeProblemData(time.toSec(), state_.q, state_.v);       
+        state_.v = tsid_->getAccelerations(solver_->solve(HQPData));
+               
+        if (issimulation_)
+            state_.kinova.q = pinocchio::integrate(robot_->model(), state_.q, 0.001 * state_.v).segment(7,7);
+        else{
+            for(int i = 0; i < 7; i++)
+            {
+                base_command_.mutable_actuators(i)->set_position(base_feedback_.actuators(i).position());
+                base_command_.mutable_actuators(i)->set_velocity( (state_.v.segment(6,7)(i) - 0.5 * state_.kinova.v(i))* 180.0 /M_PI );        		    
+            }
+            
+            base_command_.set_frame_id(base_command_.frame_id() + 1);
+            if (base_command_.frame_id() > 65535)
+                base_command_.set_frame_id(0);
+
+            for (int idx = 0; idx < 7; idx++)
+            {
+                base_command_.mutable_actuators(idx)->set_command_id(base_command_.frame_id());
+            }
+
+            base_feedback_ = base_cyclic_->Refresh(base_command_, 0);
+        }
     }
     
 

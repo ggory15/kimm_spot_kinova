@@ -168,9 +168,21 @@ namespace spotkinova
                                                     ConstRefVector v,
                                                     Data & )
     {
+      using namespace std;
       if (!m_spot){
         m_p = q;
         m_p_error = m_p - m_ref.pos;
+        for (int i=0; i<7; i++){
+          if (m_p_error(i) > 6.0){ //ex 3.13(179deg) to -3.13(-179deg), p_error: 6.26, actual_error: -0.02
+            cout << "joint is rearranged for -pi to pi setting" << endl;
+            m_p_error(i) = -2.0 * M_PI + m_p_error(i);
+          }
+           if (m_p_error(i) < -6.0){ //ex -3.13 to 3.13, p_error: -6.26, actual_error: 0.02
+            cout << "joint is rearranged for -pi to pi setting" << endl;
+            m_p_error(i) = m_p_error(i)+2.0*M_PI;
+          }
+        }
+
         m_a_des = - m_Kp.cwiseProduct(m_p_error);
       }
       else{

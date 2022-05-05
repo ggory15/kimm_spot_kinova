@@ -230,7 +230,7 @@ namespace RobotController{
     void SpotKinovaWrapper::init_se3_ctrl(ros::Time time){
         tsid_->removeTask("task-posture");
         tsid_->removeTask("task-se3");
-        //tsid_->addMotionTask(*postureTask_, 1e-5, 1);
+        tsid_->addMotionTask(*postureTask_, 1e-5, 1);
         tsid_->addMotionTask(*eeTask_, 1, 0);
 
         state_.kinova.q_ref = state_.kinova.q;
@@ -417,7 +417,7 @@ namespace RobotController{
     void SpotKinovaWrapper::init_se3_array_ctrl(ros::Time time){
         tsid_->removeTask("task-posture");
         tsid_->removeTask("task-se3");
-        //tsid_->addMotionTask(*postureTask_, 1e-5, 1);
+        tsid_->addMotionTask(*postureTask_, 1e-5, 1);
         tsid_->addMotionTask(*eeTask_, 1, 0);
 
         state_.kinova.q_ref = state_.kinova.q;

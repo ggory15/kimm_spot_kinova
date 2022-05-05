@@ -1,6 +1,15 @@
 # KIMM_SPOT_KINOVA PROJECT
 IMPORTANT: This package is optimized on Ubuntu 18.04 with ROS-melodic and Python 3
 
+
+## Packages
+This repository contains multiple packages to control the spot_with_kinova robot on both real and simulation world. 
+* aruco_mapping: The package for QR Marker detection. With QR marker, the robot can walk to the marker and pick object up with kinova arm.
+* kimm_spot_kinova: HQP controller for whole-body motion.
+* spot_kinova_description: description files.
+* spot_kinova_framework: a controller launcher with kimm_spot_kinova.
+* spot_kinova_msgs: action and message definitions.
+
 ## Tip
 Open bashrc
 ```
@@ -9,14 +18,13 @@ gedit ~/.bashrc
 Add the following line
 ```
 alias cm='catkin_make --cmake-args -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.6m -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.6m.so.1.0'
-export spot_kinova=~/$(your workspace)/src/kimm_spot_kinova/python/simulation_script
+export spot_kinova=~/$(your workspace)/src/kimm_spot_kinova/spot_kinova_framework/python_client
 ```
 Then, you can build catkin_project with python3. (Type just `cm` in workpace)
 And you can easily move the simulation foler. (Type cd $spot_kinova)
 
 ## Prerequisite
 ### For Ros with Python3
-
 ```
 sudo apt install python3-pip python3-all-dev python3-rospkg
 sudo apt install ros-melodic-desktop-full --fix-missing
@@ -48,7 +56,7 @@ git clone https://github.com/chvmp/champ --recursive
 git clone https://github.com/chvmp/champ_teleop --recursive
 cd ..
 rosdep install --from-paths src --ignore-src -r -y
-catkin_make 
+catkin_make --cmake-args -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.6m -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.6m.so.1.0
 ```
 
 ### For PyYaml
@@ -66,10 +74,10 @@ sudo apt install ros-melodic-aruco
 sudo apt install gstreamer1.0-tools gstreamer1.0-libav libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-good1.0-dev gstreamer1.0-plugins-good gstreamer1.0-plugins-base
 sudo apt-get install ros-melodic-rgbd-launch
 git clone https://github.com/Kinovarobotics/ros_kortex_vision --recursive
-catkin_make
+catkin_make --cmake-args -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.6m -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.6m.so.1.0
 ```
 
-## Install
+## Install for This Package
 ```
 catkin_make --cmake-args -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.6m -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.6m.so.1.0
 ```

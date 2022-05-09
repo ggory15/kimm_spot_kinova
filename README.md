@@ -39,7 +39,7 @@ rosdep update
 pip3 install bosdyn-client bosdyn-mission bosdyn-api bosdyn-core
 pip3 install empy
 pip3 install cython
-git clone https://github.com/clearpathrobotics/spot_ros/ --recursive
+git clone https://github.com/ggory15/spot_ros/ --recursive
 git clone https://github.com/ros/geometry2 --branch 0.6.5
 cd ..
 catkin_make --cmake-args -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.6m -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.6m.so.1.0

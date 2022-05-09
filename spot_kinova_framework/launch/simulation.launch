@@ -50,6 +50,9 @@
 
     <include file="$(find kimm_spot_kinova)/launch/include/move_base.launch">
     </include>
+
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find spot_viz)/rviz/robot.rviz -f $(arg rviz_ref_frame)" output="screen">
+    </node>
     
    
     <node name="arm_robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">

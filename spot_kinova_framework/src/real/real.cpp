@@ -68,7 +68,7 @@ int main(int argc, char **argv)
         qr_walk_action_server_->compute(ros::Time::now());
         gripper_action_server_->compute(ros::Time::now());
         qr_pick_action_server_->compute(ros::Time::now());
-        se3_action_server_->compute(ros::Time::now());
+        se3_array_action_server_->compute(ros::Time::now());
         
         publishJointState();
         publishBodyPose();

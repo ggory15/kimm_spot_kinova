@@ -4,7 +4,8 @@ import rospy
 import actionlib
 import spot_kinova_msgs.msg
 from sensor_msgs.msg import JointState
-from geometry_msgs.msg import Pose, PoseStamped
+from geometry_msgs.msg import Pose, PoseStamped, PoseArray
+from std_msgs.msg import Float32MultiArray
 import numpy as np
 import pinocchio as se3
 import importlib, pkgutil
@@ -47,6 +48,70 @@ class ControlSuiteShell(cmd.Cmd):
         self.qr_walk_ctrl_client.wait_for_server()
         self.gripper_ctrl_client = actionlib.SimpleActionClient('/spot_kinova_action/gripper_control', spot_kinova_msgs.msg.GripperAction)
         self.gripper_ctrl_client.wait_for_server()
+        self.se3_array_ctrl_client = actionlib.SimpleActionClient('/spot_kinova_action/se3_array_control', spot_kinova_msgs.msg.SE3ArrayAction)
+        self.se3_array_ctrl_client.wait_for_server()
+
+    def do_pickup(self, arg):
+        goal = spot_kinova_msgs.msg.SE3ArrayGoal
+
+        goal.relative = True
+        goal.target_poses = PoseArray()
+        pose_se = Pose()   
+        pose_se.position.x = 0.0
+        pose_se.position.y = 0.0
+        pose_se.position.z = 0.1
+        pose_se.orientation.x =  0.0
+        pose_se.orientation.y = 0.0
+        pose_se.orientation.z = 0.0
+        pose_se.orientation.w = 1.0
+        goal.target_poses.poses.append(pose_se)
+
+        pose_se2 = Pose()
+        pose_se2.position.x = 0.0
+        pose_se2.position.y = -0.3
+        pose_se2.position.z = 0.0
+        pose_se2.orientation.x =  0.0
+        pose_se2.orientation.y = 0.0
+        pose_se2.orientation.z = 1.0
+        pose_se2.orientation.w = 0.0
+        goal.target_poses.poses.append(pose_se2)
+
+        pose_se2 = Pose()
+        pose_se2.position.x = 0.0
+        pose_se2.position.y = 0.0
+        pose_se2.position.z = -0.1
+        pose_se2.orientation.x =  0.0
+        pose_se2.orientation.y = 0.0
+        pose_se2.orientation.z = 0.0
+        pose_se2.orientation.w = 1.0
+        goal.target_poses.poses.append(pose_se2)
+        
+        goal.durations = Float32MultiArray()
+        goal.durations.data.append(2.0)
+        goal.durations.data.append(3.0)
+        goal.durations.data.append(4.0)
+        print ("action sent")
+
+        self.se3_array_ctrl_client.send_goal(goal)
+        
+        self.se3_array_ctrl_client.wait_for_result()
+        if (self.se3_array_ctrl_client.get_result()):
+            print ("action succeed")
+        else:
+            print ("action failed")
+
+    def do_preready(self, arg):
+        'Go to the home position using predefined posture ctrl'
+        goal = spot_kinova_msgs.msg.PredefinedPostureGoal
+        goal.posture_name = "Ready"
+
+        print ("anction sent")
+        self.predefined_posture_ctrl_client.send_goal(goal)
+        self.predefined_posture_ctrl_client.wait_for_result()
+        if (self.predefined_posture_ctrl_client.get_result()):
+            print ("action succeed")
+        else:
+            print ("action failed")
 
     def do_prehome(self, arg):
         'Go to the home position using predefined posture ctrl'
@@ -212,17 +277,17 @@ class ControlSuiteShell(cmd.Cmd):
         goal = spot_kinova_msgs.msg.WalkGoal
 
         goal.target_pose = Pose()
-        goal.target_pose.position.x = 1.16
-        goal.target_pose.position.y = -0.8
+        goal.target_pose.position.x = 1.0
+        goal.target_pose.position.y = 0.0
         goal.target_pose.position.z = 0.0
 
         goal.target_pose.orientation.x = 0.0
         goal.target_pose.orientation.y = 0.0
-        goal.target_pose.orientation.z = -0.3338069
-        goal.target_pose.orientation.w = 0.9426415
+        goal.target_pose.orientation.z = 0.0
+        goal.target_pose.orientation.w = 1.0
 
 
-        goal.relative = False
+        goal.relative = True
 
         print ("anction sent")
         self.walk_client.send_goal(goal)

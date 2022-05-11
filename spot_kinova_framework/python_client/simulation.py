@@ -78,7 +78,7 @@ class ControlSuiteShell(cmd.Cmd):
         pose_se = Pose()   
         pose_se.position.x = 0.0
         pose_se.position.y = 0.0
-        pose_se.position.z = 0.2
+        pose_se.position.z = 0.1
         pose_se.orientation.x =  0.0
         pose_se.orientation.y = 0.0
         pose_se.orientation.z = 0.0
@@ -87,7 +87,7 @@ class ControlSuiteShell(cmd.Cmd):
 
         pose_se2 = Pose()
         pose_se2.position.x = 0.0
-        pose_se2.position.y = -0.6
+        pose_se2.position.y = -0.3
         pose_se2.position.z = 0.0
         pose_se2.orientation.x =  0.0
         pose_se2.orientation.y = 0.0
@@ -98,7 +98,7 @@ class ControlSuiteShell(cmd.Cmd):
         pose_se2 = Pose()
         pose_se2.position.x = 0.0
         pose_se2.position.y = 0.0
-        pose_se2.position.z = -0.2
+        pose_se2.position.z = -0.1
         pose_se2.orientation.x =  0.0
         pose_se2.orientation.y = 0.0
         pose_se2.orientation.z = 0.0

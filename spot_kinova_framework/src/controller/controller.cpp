@@ -230,7 +230,7 @@ namespace RobotController{
     void SpotKinovaWrapper::init_se3_ctrl(ros::Time time){
         tsid_->removeTask("task-posture");
         tsid_->removeTask("task-se3");
-        tsid_->addMotionTask(*postureTask_, 1e-5, 1);
+      //  tsid_->addMotionTask(*postureTask_, 1e-5, 1);
         tsid_->addMotionTask(*eeTask_, 1, 0);
 
         state_.kinova.q_ref = state_.kinova.q;
@@ -417,7 +417,7 @@ namespace RobotController{
     void SpotKinovaWrapper::init_se3_array_ctrl(ros::Time time){
         tsid_->removeTask("task-posture");
         tsid_->removeTask("task-se3");
-        tsid_->addMotionTask(*postureTask_, 1e-5, 1);
+    //    tsid_->addMotionTask(*postureTask_, 1e-5, 1);
         tsid_->addMotionTask(*eeTask_, 1, 0);
 
         state_.kinova.q_ref = state_.kinova.q;
@@ -441,7 +441,7 @@ namespace RobotController{
         if (state_.kinova.isrelative){
             Eigen::Quaterniond recieve_quat_eigen(state_.q(6), state_.q(3), state_.q(4), state_.q(5));
             state_.kinova.H_ee_ref.translation() = recieve_quat_eigen.toRotationMatrix() * state_.kinova.H_ee_ref_array[array_cnt_].translation() + state_.kinova.H_ee_init.translation();
-            state_.kinova.H_ee_ref.rotation() = recieve_quat_eigen.toRotationMatrix()* state_.kinova.H_ee_ref_array[array_cnt_].rotation() * state_.kinova.H_ee_init.rotation();
+            state_.kinova.H_ee_ref.rotation() = state_.kinova.H_ee_init.rotation() * state_.kinova.H_ee_ref_array[array_cnt_].rotation();
         }
         trajEE_Cubic_->setGoalSample(state_.kinova.H_ee_ref);
                 
@@ -505,7 +505,7 @@ namespace RobotController{
                         rot_des *= state_.kinova.H_ee_ref_array[i+1].rotation();
                     }
                     state_.kinova.H_ee_ref.translation() = recieve_quat_eigen.toRotationMatrix() * pos_des + state_.kinova.H_ee_init.translation();
-                    state_.kinova.H_ee_ref.rotation() = recieve_quat_eigen.toRotationMatrix()* rot_des * state_.kinova.H_ee_init.rotation();
+                    state_.kinova.H_ee_ref.rotation() = state_.kinova.H_ee_init.rotation() * rot_des;
                 }
                 
                 trajEE_Cubic_->setGoalSample(state_.kinova.H_ee_ref);    

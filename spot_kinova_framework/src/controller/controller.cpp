@@ -171,6 +171,18 @@ namespace RobotController{
         trajPosture_Cubic_->setInitSample(state_.kinova.q);
         trajPosture_Cubic_->setDuration(state_.kinova.duration);
         trajPosture_Cubic_->setStartTime(time.toSec());
+        VectorXd m_p_error = state_.kinova.q - state_.kinova.q_ref;
+
+        for (int i=0; i<7; i++){
+          if (i == 0 || i == 2 || i == 4 || i == 6){
+            if (fabs(m_p_error(i)) > M_PI){ 
+              if (state_.kinova.q(i) <= 0.0)
+                state_.kinova.q_ref(i) = state_.kinova.q_ref(i)-2.0*M_PI; // -170 170 : m_p_error -340: -190
+              else
+                state_.kinova.q_ref(i) = state_.kinova.q_ref(i)+2.0*M_PI; // 170 -170 : m_p_errro 340: 190   
+            }
+          }
+        }
         trajPosture_Cubic_->setGoalSample(state_.kinova.q_ref);  
         
         if (issimulation_){
@@ -193,6 +205,13 @@ namespace RobotController{
 
             for (int i=0; i<7; i++)
                 actuator_config_->SetControlMode(*control_mode_message_, i+1);
+
+            // ROS_WARN_STREAM("error");
+            // ROS_WARN_STREAM(postureTask_->position_error().transpose());
+            // ROS_WARN_STREAM("actual");
+            // ROS_WARN_STREAM(state_.kinova.q);
+            // ROS_WARN_STREAM("desired");
+            // ROS_WARN_STREAM(state_.kinova.q_ref);
         }
     }
     void SpotKinovaWrapper::compute_joint_posture_ctrl(ros::Time time){
@@ -224,6 +243,7 @@ namespace RobotController{
             }
 
             base_feedback_ = base_cyclic_->Refresh(base_command_, 0);
+
         }
     }
     
@@ -315,6 +335,9 @@ namespace RobotController{
             }
 
             base_feedback_ = base_cyclic_->Refresh(base_command_, 0);
+            
+            
+            
         }
     }
 
@@ -417,7 +440,7 @@ namespace RobotController{
     void SpotKinovaWrapper::init_se3_array_ctrl(ros::Time time){
         tsid_->removeTask("task-posture");
         tsid_->removeTask("task-se3");
-        tsid_->addMotionTask(*postureTask_, 1e-5, 1);
+        //tsid_->addMotionTask(*postureTask_, 1e-5, 1);
         tsid_->addMotionTask(*eeTask_, 1, 0);
 
         state_.kinova.q_ref = state_.kinova.q;
@@ -443,6 +466,11 @@ namespace RobotController{
             state_.kinova.H_ee_ref.translation() = recieve_quat_eigen.toRotationMatrix() * state_.kinova.H_ee_ref_array[array_cnt_].translation() + state_.kinova.H_ee_init.translation();
             state_.kinova.H_ee_ref.rotation() = state_.kinova.H_ee_init.rotation() * state_.kinova.H_ee_ref_array[array_cnt_].rotation();
         }
+        // ROS_WARN_STREAM("desierd");
+        // ROS_WARN_STREAM(state_.kinova.H_ee_ref);
+        // ROS_WARN_STREAM("actual");
+        // ROS_WARN_STREAM(state_.kinova.H_ee);
+
         trajEE_Cubic_->setGoalSample(state_.kinova.H_ee_ref);
                 
         Vector6d ee_gain_tmp;
@@ -498,14 +526,18 @@ namespace RobotController{
                     Eigen::Quaterniond recieve_quat_eigen(state_.q(6), state_.q(3), state_.q(4), state_.q(5));
                     Eigen::Vector3d pos_des;
                     Eigen::Matrix3d rot_des;
-                    pos_des.setZero();
-                    rot_des.setIdentity();
+                    pos_des = state_.kinova.H_ee_ref_array[0].translation();
+                    rot_des = state_.kinova.H_ee_ref_array[0].rotation();
                     for (int i=0; i<array_cnt_; i++){
                         pos_des += state_.kinova.H_ee_ref_array[i+1].translation();
                         rot_des *= state_.kinova.H_ee_ref_array[i+1].rotation();
                     }
                     state_.kinova.H_ee_ref.translation() = recieve_quat_eigen.toRotationMatrix() * pos_des + state_.kinova.H_ee_init.translation();
                     state_.kinova.H_ee_ref.rotation() = state_.kinova.H_ee_init.rotation() * rot_des;
+                    // ROS_WARN_STREAM("desierd");
+                    // ROS_WARN_STREAM(state_.kinova.H_ee_ref);
+                    // ROS_WARN_STREAM("actual");
+                    // ROS_WARN_STREAM(state_.kinova.H_ee);
                 }
                 
                 trajEE_Cubic_->setGoalSample(state_.kinova.H_ee_ref);    

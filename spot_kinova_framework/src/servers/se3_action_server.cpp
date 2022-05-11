@@ -54,7 +54,7 @@ bool SE3ActionServer::compute(ros::Time ctime)
   mu_->compute_se3_ctrl(ctime);
   
   //ROS_WARN_STREAM((mu_->state().kinova.H_ee.translation()-mu_->state().kinova.H_ee_ref.translation()).norm());
-  if (ctime.toSec() - start_time_.toSec() > goal_->duration +1.0 && (mu_->state().kinova.H_ee.translation()-mu_->state().kinova.H_ee_ref.translation()).norm() < 5e-3){
+  if (ctime.toSec() - start_time_.toSec() > goal_->duration + 3.0 && (mu_->state().kinova.H_ee.translation()-mu_->state().kinova.H_ee_ref.translation()).norm() < 5e-3){
     setSucceeded();
     return true;
   }

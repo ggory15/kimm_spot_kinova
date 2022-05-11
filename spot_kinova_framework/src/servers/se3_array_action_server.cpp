@@ -65,7 +65,7 @@ bool SE3ArrayActionServer::compute(ros::Time ctime)
 
   mu_->compute_se3_array_ctrl(ctime);
 
-  if (ctime.toSec() - start_time_.toSec() > 1.0 + std::accumulate(mu_->state().kinova.duration_array.begin(), mu_->state().kinova.duration_array.end(), 0)){
+  if (ctime.toSec() - start_time_.toSec() > 3.0 + std::accumulate(mu_->state().kinova.duration_array.begin(), mu_->state().kinova.duration_array.end(), 0)){
       setSucceeded();
       return true;
     }

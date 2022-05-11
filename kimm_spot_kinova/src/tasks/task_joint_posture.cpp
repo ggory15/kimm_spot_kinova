@@ -174,13 +174,12 @@ namespace spotkinova
         m_p_error = m_p - m_ref.pos;
         for (int i=0; i<7; i++){
           if (i == 0 || i == 2 || i == 4 || i == 6){
-            if (fabs(m_p_error(i)) > M_PI){
+            if (fabs(m_p_error(i)) > M_PI){ 
               if (m_p(i) < 0.0)
-                m_p_error(i) = m_p_error(i)-2.0*M_PI;
+                m_p_error(i) = -m_p_error(i)-2.0*M_PI; // -170 170 : m_p_error -340: -20
               else
-                m_p_error(i) = m_p_error(i)+2.0*M_PI;
+                m_p_error(i) = -m_p_error(i)+2.0*M_PI; // 170 -170 : m_p_errro 340: 20
             }
-            cout << "joint is rearranged for -pi to pi setting" << endl;
           }
         }
 
@@ -189,6 +188,18 @@ namespace spotkinova
       else{
         m_p = q.segment(7,7);
         m_p_error = m_p - m_ref.pos;
+        for (int i=0; i<7; i++){
+          if (i == 0 || i == 2 || i == 4 || i == 6){
+            if (fabs(m_p_error(i)) > M_PI){ 
+              if (m_p(i) <= 0.0)
+                m_p_error(i) = -m_p_error(i)-2.0*M_PI; // -170 170 : m_p_error -340: -20
+              else
+                m_p_error(i) = -m_p_error(i)+2.0*M_PI; // 170 -170 : m_p_errro 340: 20
+                
+            }
+          }
+        }
+
         m_a_des = - m_Kp.cwiseProduct(m_p_error);
       }
       for(unsigned int i=0; i<m_activeAxes.size(); i++)

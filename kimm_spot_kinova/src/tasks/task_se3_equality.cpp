@@ -196,7 +196,11 @@ namespace spotkinova
       m_a_des = m_Kp.cwiseProduct(m_p_error_vec);
 
       v_frame.linear() = v_frame.linear() + Adj_mat.topRightCorner(3,3) * v_frame.angular();
-      m_J = Adj_mat * m_J;
+      m_J = Adj_mat * m_J; // 6 by (6 + 7 + 12) = 6 by 25
+      Eigen::MatrixXd W(25, 25);
+      W.setIdentity();
+      W(12, 12) = 3.0;
+      m_J= m_J * W;
 
       
       int idx = 0;

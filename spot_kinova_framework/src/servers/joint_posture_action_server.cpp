@@ -15,7 +15,7 @@ void JointPostureActionServer::goalCallback()
     
     mode_change_ = false;
     for (int i=0; i<7; i++)
-        mu_->state().kinova.q_ref[i] = goal_->target_joints.position[i];
+        mu_->state().kinova.q_ref(i) = goal_->target_joints.position[i];
     mu_->state().kinova.duration = goal_->duration;
     
     if (!mu_->simulation())

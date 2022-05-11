@@ -6,6 +6,9 @@ import spot_kinova_msgs.msg
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import Pose, PoseStamped, PoseArray
 from std_msgs.msg import Float32MultiArray
+from std_srvs.srv import Trigger
+from spot_msgs.srv import ListGraph, DownloadGraph, UploadGraph, SetLocalizationFiducial
+import spot_msgs.msg
 import numpy as np
 import pinocchio as se3
 import importlib, pkgutil
@@ -68,7 +71,7 @@ class ControlSuiteShell(cmd.Cmd):
 
         pose_se2 = Pose()
         pose_se2.position.x = 0.0
-        pose_se2.position.y = -0.3
+        pose_se2.position.y = -0.1
         pose_se2.position.z = 0.0
         pose_se2.orientation.x =  0.0
         pose_se2.orientation.y = 0.0
@@ -85,11 +88,45 @@ class ControlSuiteShell(cmd.Cmd):
         pose_se2.orientation.z = 0.0
         pose_se2.orientation.w = 1.0
         goal.target_poses.poses.append(pose_se2)
+
+        pose_se = Pose()   
+        pose_se.position.x = 0.0
+        pose_se.position.y = 0.0
+        pose_se.position.z = 0.1
+        pose_se.orientation.x =  0.0
+        pose_se.orientation.y = 0.0
+        pose_se.orientation.z = 0.0
+        pose_se.orientation.w = 1.0
+        goal.target_poses.poses.append(pose_se)
+
+        pose_se2 = Pose()
+        pose_se2.position.x = 0.1
+        pose_se2.position.y = 0.2
+        pose_se2.position.z = 0.0
+        pose_se2.orientation.x =  0.0
+        pose_se2.orientation.y = 0.0
+        pose_se2.orientation.z = 0.0
+        pose_se2.orientation.w = 1.0
+        goal.target_poses.poses.append(pose_se2)
+
+        pose_se2 = Pose()
+        pose_se2.position.x = 0.0
+        pose_se2.position.y = 0.0
+        pose_se2.position.z = -0.1
+        pose_se2.orientation.x =  0.0
+        pose_se2.orientation.y = 0.0
+        pose_se2.orientation.z = 0.0
+        pose_se2.orientation.w = 1.0
+        goal.target_poses.poses.append(pose_se2)
+
         
         goal.durations = Float32MultiArray()
         goal.durations.data.append(2.0)
         goal.durations.data.append(3.0)
-        goal.durations.data.append(4.0)
+        goal.durations.data.append(3.0)
+        goal.durations.data.append(2.0)
+        goal.durations.data.append(3.0)
+        goal.durations.data.append(3.0)
         print ("action sent")
 
         self.se3_array_ctrl_client.send_goal(goal)
@@ -364,7 +401,108 @@ class ControlSuiteShell(cmd.Cmd):
         print ("anction sent")
         self.qr_walk_ctrl_client.send_goal(goal)
         self.qr_walk_ctrl_client.wait_for_result()
-    
+        
+    def do_start_recording(self, arg):
+        'Start Recording'
+
+        rospy.wait_for_service('/spot/start_recording')
+        start_recording_service = rospy.ServiceProxy('/spot/start_recording', Trigger)
+        resp = start_recording_service()
+
+        print(resp)
+
+    def do_stop_recording(self, arg):
+        'Stop Recording'
+
+        rospy.wait_for_service('/spot/stop_recording')
+        stop_recording_service = rospy.ServiceProxy('/spot/stop_recording', Trigger)
+        resp = stop_recording_service()
+
+        print(resp)
+
+    def do_clear_graph(self, arg):
+        'Clear Graph'
+
+        rospy.wait_for_service('/spot/clear_graph')
+        clear_graph_service = rospy.ServiceProxy('/spot/clear_graph', Trigger)
+        resp = clear_graph_service()
+
+        print(resp)
+
+    def do_download_graph(self, arg):
+        'Download Graph'
+
+        make_dir(self.map_root)
+
+        prefix = 'kimm_map_'
+        map_dirs = os.listdir(self.map_root)
+        num = 0
+        if len(map_dirs) > 0:
+            map_dirs.sort()
+            num = int(map_dirs[-1].split('_')[-1])+1
+        
+        save_path = os.path.join(self.map_root,prefix+f'{num:06d}')
+        # make_dir(save_path)
+        # print(save_path)
+
+        rospy.wait_for_service('/spot/download_graph')
+        download_graph_service = rospy.ServiceProxy('/spot/download_graph', DownloadGraph)
+
+        resp = download_graph_service(save_path)
+        print(resp)
+
+    def do_upload_graph(self, arg):
+        'Upload Graph'
+
+        prefix = 'kimm_map_'
+        num = int(arg)
+
+        map_path = os.path.join(self.map_root,prefix+f'{num:06d}')
+
+        if os.path.exists(map_path):
+            rospy.wait_for_service('/spot/upload_graph')
+            upload_graph_service = rospy.ServiceProxy('/spot/upload_graph', UploadGraph)
+            resp = upload_graph_service(map_path)
+            print(resp)
+        else:
+            print('map path does not exist')
+
+    def do_list_graph(self, arg):
+        'List Graph'
+
+        rospy.wait_for_service('/spot/list_graph')
+        list_graph_service = rospy.ServiceProxy('/spot/list_graph', ListGraph)
+        resp = list_graph_service() #resp.waypoint_ids[0]
+        self.waypoint_ids = resp.waypoint_ids
+
+        print(resp)
+
+    def do_set_localization_fiducial(self, arg):
+        'Set localization fiducial'
+
+        rospy.wait_for_service('/spot/set_localization_fiducial')
+        set_localization_fiducial_service = rospy.ServiceProxy('/spot/set_localization_fiducial', SetLocalizationFiducial)
+        resp = set_localization_fiducial_service()
+
+        print(resp)
+
+    def do_navigate_to(self, arg):
+        'Navigate to arg'
+        num = int(arg)
+
+        goal = spot_msgs.msg.NavigateToActionGoal
+        goal.id_navigate_to = self.waypoint_ids[num]
+        print(goal.id_navigate_to)
+        
+        print ("anction sent")
+        self.navigate_to_client.send_goal(goal)
+        self.navigate_to_client.wait_for_result()
+
+        if (self.navigate_to_client.get_result()):
+            print ("action succeed")
+        else:
+            print ("action failed")
+
     def do_open(self, arg):
         'Open Gripper'
         goal = spot_kinova_msgs.msg.GripperGoal

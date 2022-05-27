@@ -263,11 +263,12 @@ namespace RobotController{
         trajEE_Cubic_->setStartTime(time.toSec());
         trajEE_Cubic_->setDuration(state_.kinova.duration);
 
-        trajEE_Cubic_->setInitSample(state_.kinova.H_ee);     
+        trajEE_Cubic_->setInitSample(state_.kinova.H_ee);   
+        state_.kinova.H_ee_init = state_.kinova.H_ee;  
         if (state_.kinova.isrelative){
             Eigen::Quaterniond recieve_quat_eigen(state_.q(6), state_.q(3), state_.q(4), state_.q(5));
             state_.kinova.H_ee_ref.translation() = recieve_quat_eigen.toRotationMatrix() * state_.kinova.H_ee_ref.translation() + state_.kinova.H_ee.translation();
-            state_.kinova.H_ee_ref.rotation() = recieve_quat_eigen.toRotationMatrix()*state_.kinova.H_ee_ref.rotation() * state_.kinova.H_ee.rotation();
+            state_.kinova.H_ee_ref.rotation() = state_.kinova.H_ee_init.rotation() * state_.kinova.H_ee_ref.rotation();
         }
         trajEE_Cubic_->setGoalSample(state_.kinova.H_ee_ref);
 
@@ -412,6 +413,7 @@ namespace RobotController{
             std::cout << "Timeout on action notification wait" << std::endl;
         }
         const auto promise_event = finish_future.get();
+        cout << "coord" << state_.kinova.H_ee << endl;
     }
 
     void SpotKinovaWrapper::init_open_gripper(){

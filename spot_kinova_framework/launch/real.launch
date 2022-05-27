@@ -15,7 +15,7 @@
     <arg name="description_file" default="$(find spot_kinova_description)/urdf/spot_kinova_simul.urdf"/>
     <param name="robot_description" textfile="$(arg description_file)"/>
 
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find spot_viz)/rviz/robot.rviz -f $(arg rviz_ref_frame)" />
+    <!--node name="rviz" pkg="rviz" type="rviz" args="-d $(find spot_viz)/rviz/robot.rviz -f $(arg rviz_ref_frame)" /-->
    
     <node name="arm_robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
             <param name="use_tf_static"     value="false"/>

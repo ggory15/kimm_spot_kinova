@@ -117,3 +117,14 @@ Open Another Terminal, and go to the "/spot_kinova_framework/python_client/" fol
 python3 real.py
 ```
 you can type "home", "walk", "reach", and so on.
+
+## With State Machine
+Open Terminal (Warning: Please, don't use terminel in Vscode.)
+```
+roslaunch spot_kinova_framework simulation.launch
+rosrun spot_kinova_smach task_manager_simul.py
+```
+Then, you can start state transition with rostopic msg.
+```
+rostopic pub /spot_kinova/state_transition std_msgs/String "data: 'pick'"
+```

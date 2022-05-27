@@ -421,17 +421,17 @@ ArucoMapping::arucoMarker2Tf(const aruco::Marker &marker)
   cv::Mat marker_translation = marker.Tvec;
 
   cv::Mat rotate_to_ros(3,3,CV_32FC1);
-  rotate_to_ros.at<float>(0,0) = -1.0;
-  rotate_to_ros.at<float>(0,1) = 0;
-  rotate_to_ros.at<float>(0,2) = 0;
-  rotate_to_ros.at<float>(1,0) = 0;
-  rotate_to_ros.at<float>(1,1) = 0;
-  rotate_to_ros.at<float>(1,2) = 1.0;
+  rotate_to_ros.at<float>(0,0) = 0.0;
+  rotate_to_ros.at<float>(0,1) = 1.0;
+  rotate_to_ros.at<float>(0,2) = 0.0;
+  rotate_to_ros.at<float>(1,0) = -1.0;
+  rotate_to_ros.at<float>(1,1) = 0.0;
+  rotate_to_ros.at<float>(1,2) = 0.0;
   rotate_to_ros.at<float>(2,0) = 0.0;
-  rotate_to_ros.at<float>(2,1) = 1.0;
-  rotate_to_ros.at<float>(2,2) = 0.0;
-
-  // marker_rotation = marker_rotation * rotate_to_ros.t();
+  rotate_to_ros.at<float>(2,1) = 0.0;
+  rotate_to_ros.at<float>(2,2) = 1.0;
+  
+marker_rotation = marker_rotation * rotate_to_ros.t();
 
   // Origin solution
   tf::Matrix3x3 marker_tf_rot(marker_rotation.at<float>(0,0),marker_rotation.at<float>(0,1),marker_rotation.at<float>(0,2),

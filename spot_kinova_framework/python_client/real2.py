@@ -5,7 +5,7 @@ import actionlib
 import spot_kinova_msgs.msg
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import Pose, PoseStamped, PoseArray
-from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import Float32MultiArray, String
 from std_srvs.srv import Trigger
 from spot_msgs.srv import ListGraph, DownloadGraph, UploadGraph, SetLocalizationFiducial
 import spot_msgs.msg
@@ -65,6 +65,30 @@ class ControlSuiteShell(cmd.Cmd):
 
         self.waypoint_ids = []
         self.map_root = os.path.join(os.path.expanduser('~'),'.kimm_map')
+
+        self.mech_call_pub = rospy.Publisher('/mech_call', String, queue_size=10)
+        rospy.Subscriber('mechmind_publisher/pose', Pose, self.mechmind_pose_callback)
+        self.mech_pose = Pose()
+        self.iscallback_mech = False
+
+    def mechmind_pose_callback(self, msg):        
+        self.mech_pose = msg
+        self.iscallback_mech = True
+        print(self.mech_pose)        
+
+        '''
+        if (self.iscallback_mech):
+            print ("pose received")
+            self.iscallback_mech = False
+        else:
+            print ("not received")
+        '''
+
+    def do_mechcall(self, arg):
+        mech_msg = String()        
+        mech_msg.data = "mech_call_0" #request designated labeled object pose
+        print ("pub mech_call")
+        self.mech_call_pub.publish(mech_msg)
 
     def do_pickup(self, arg):
         goal = spot_kinova_msgs.msg.SE3ArrayGoal
@@ -155,13 +179,21 @@ class ControlSuiteShell(cmd.Cmd):
         goal.topic_name = "aruco_markers_pose1"
         goal.target_pose = Pose()
 
-        goal.target_pose.position.x = 0.1
-        goal.target_pose.position.y = 0.0
-        goal.target_pose.position.z = 0.15
-        goal.target_pose.orientation.x =  0.0
-        goal.target_pose.orientation.y = 0
-        goal.target_pose.orientation.z = 0.0
-        goal.target_pose.orientation.w = 1.0
+        #goal.target_pose.position.x = 0.1
+        #goal.target_pose.position.y = 0.0
+        #goal.target_pose.position.z = 0.15
+        #goal.target_pose.orientation.x =  0.0
+        #goal.target_pose.orientation.y = 0
+        #goal.target_pose.orientation.z = 0.0
+        #goal.target_pose.orientation.w = 1.0
+
+        goal.target_pose.position.x    =  self.mech_pose.position.x
+        goal.target_pose.position.y    =  self.mech_pose.position.y
+        goal.target_pose.position.z    =  0.25 + self.mech_pose.position.z
+        goal.target_pose.orientation.x =  self.mech_pose.orientation.x
+        goal.target_pose.orientation.y =  self.mech_pose.orientation.y
+        goal.target_pose.orientation.z =  self.mech_pose.orientation.z
+        goal.target_pose.orientation.w =  self.mech_pose.orientation.w
 
         goal.duration = 3.0
         print ("action sent")

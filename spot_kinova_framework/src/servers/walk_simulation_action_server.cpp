@@ -59,12 +59,6 @@ bool WalkSimulationActionServer::compute(ros::Time ctime)
 
   if (!as_.isActive())
       return false; 
-
-  if (!mu_->state().spot.body_tilted){    
-    ROS_WARN_STREAM("Body is tilted. Cannot WalkSimulation for safety.");
-    setAborted();
-    return false;
-  }
   
   if (walk_done_){
     setSucceeded();

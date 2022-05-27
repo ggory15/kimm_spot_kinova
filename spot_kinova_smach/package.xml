@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package>
+  <name>spot_kinova_smach</name>
+  <version>0.0.1</version>
+  <description>The spot_kinova_smach package</description>
+
+  <maintainer email="kim87@kimm.re.kr">Sanghyun Kim</maintainer>
+
+  <license>BSD</license>
+
+  <author email="kim87@kimm.re.kr">Sanghyun Kim</author>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>smach</run_depend>
+  <run_depend>std_srvs</run_depend>
+
+  <export>
+
+  </export>
+</package>

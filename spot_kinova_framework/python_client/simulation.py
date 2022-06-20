@@ -101,16 +101,24 @@ class ControlSuiteShell(cmd.Cmd):
     def do_qrpick(self, arg):
         goal = spot_kinova_msgs.msg.QRPickGoal
 
-        goal.topic_name = "qr_target_pose"
-        goal.target_pose = Pose()
+        qr_pose= Pose()
+        qr_pose.position.x = 0.9
+        qr_pose.position.y = 0.1
+        qr_pose.position.z = 0.5
+        qr_pose.orientation.x =  0.0
+        qr_pose.orientation.y = 0
+        qr_pose.orientation.z = 0
+        qr_pose.orientation.w = 1
+        goal.qr_pose = qr_pose
 
-        goal.target_pose.position.x = 0.2
+        goal.target_pose = Pose()
+        goal.target_pose.position.x = 0.0
         goal.target_pose.position.y = 0.1
         goal.target_pose.position.z = 0.0
         goal.target_pose.orientation.x =  0.0
         goal.target_pose.orientation.y = 0
-        goal.target_pose.orientation.z = 0.707
-        goal.target_pose.orientation.w = 0.707
+        goal.target_pose.orientation.z = 0
+        goal.target_pose.orientation.w = 1
 
         goal.duration = 3.0
         print ("action sent")

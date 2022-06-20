@@ -20,8 +20,8 @@ def talker():
         qr_pose.position.z = 0.5
         qr_pose.orientation.x =  0.0
         qr_pose.orientation.y = 0
-        qr_pose.orientation.z = 0.7071068
-        qr_pose.orientation.w = 0.7071068
+        qr_pose.orientation.z = 0
+        qr_pose.orientation.w = 1
 
         marker = Marker()
         marker.header.frame_id = 'odom'
@@ -37,7 +37,7 @@ def talker():
         marker.pose.orientation.w = qr_pose.orientation.w
 
         marker.scale.x = .1
-        marker.scale.y = .1
+        marker.scale.y = .2
         marker.scale.z = .01
         marker.color.a = 1
         marker.color.r = 0.0

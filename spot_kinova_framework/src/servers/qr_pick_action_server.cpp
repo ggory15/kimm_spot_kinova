@@ -10,17 +10,12 @@ QRPickActionServer::QRPickActionServer(std::string name, ros::NodeHandle &nh, st
 	as_.registerPreemptCallback(boost::bind(&QRPickActionServer::preemptCallback, this));
   as_.start();
 
-  qr_recieved_ = false;
 }
 
 void QRPickActionServer::goalCallback()
 {
     feedback_header_stamp_ = 0;
     goal_ = as_.acceptNewGoal();
-    
-    qr_recieved_ = false;
-    string topic_name = goal_->topic_name;
-    qr_subscriber_ = nh_.subscribe("/" + topic_name, 1, &QRPickActionServer::qrCallback, this);
     
     mode_change_ = true;
     if (!mu_->simulation())
@@ -49,19 +44,14 @@ bool QRPickActionServer::compute(ros::Time ctime)
   if (!as_.isActive())
       return false; 
 
-  if (ctime.toSec() - start_time_.toSec() > 1.0 && !qr_recieved_){
-    ROS_WARN_STREAM("QR is not recieved");
-    setAborted();
-    qr_subscriber_.shutdown();
-    return false;
-  }
-
-  if (ctime.toSec() - start_time_.toSec() > 1.0 && qr_recieved_){
+  if (ctime.toSec() - start_time_.toSec() > 1.0){
     if (mode_change_){
       SE3 target_tf;
       mu_->state().kinova.H_ee_ref_array.resize(2);
       mu_->state().kinova.duration_array.resize(2);
 
+      qr_tf_ = SE3(Eigen::Quaterniond(goal_->qr_pose.orientation.w, goal_->qr_pose.orientation.x, goal_->qr_pose.orientation.y, goal_->qr_pose.orientation.z).toRotationMatrix(),
+                      Eigen::Vector3d(goal_->qr_pose.position.x, goal_->qr_pose.position.y, goal_->qr_pose.position.z));
       target_tf = SE3(Eigen::Quaterniond(goal_->target_pose.orientation.w, goal_->target_pose.orientation.x, goal_->target_pose.orientation.y, goal_->target_pose.orientation.z).toRotationMatrix(),
                       Eigen::Vector3d(goal_->target_pose.position.x, goal_->target_pose.position.y, 0.0));
       mu_->state().kinova.H_ee_ref_array[0] = qr_tf_ * target_tf;
@@ -90,9 +80,8 @@ bool QRPickActionServer::compute(ros::Time ctime)
     }
     mu_->compute_se3_array_ctrl(ctime);
  
-    if (ctime.toSec() - start_time_.toSec() > goal_->duration * 2.0 +2.0){
+    if (ctime.toSec() - start_time_.toSec() > goal_->duration * 1.0 +3.0){
       setSucceeded();
-      qr_subscriber_.shutdown();
       return true;
     }
   }
@@ -119,11 +108,4 @@ void QRPickActionServer::setAborted()
   if (!mu_->simulation())
     mu_->done_se3_ctrl();
   control_running_ = false;
-}
-void QRPickActionServer::qrCallback(const geometry_msgs::Pose::ConstPtr& msg){
-    qr_recieved_ = true;
-
-    qr_tf_ = SE3(Eigen::Quaterniond(msg->orientation.w,  msg->orientation.x,  msg->orientation.y,  msg->orientation.z),
-                 Eigen::Vector3d(msg->position.x, msg->position.y, msg->position.z));
-    
 }

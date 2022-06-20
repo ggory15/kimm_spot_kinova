@@ -23,9 +23,6 @@ class QRPickActionServer : public ActionServerBase
   spot_kinova_msgs::QRPickResult result_;
   spot_kinova_msgs::QRPickGoalConstPtr goal_;
 
-  ros::Subscriber qr_subscriber_;
-  // geometry_msgs::PoseArray msg_;
-  bool qr_recieved_;
   geometry_msgs::Pose qr_msg_;
 
   bool isrelative_;

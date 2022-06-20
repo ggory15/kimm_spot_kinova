@@ -27,6 +27,7 @@ int main(int argc, char **argv)
     joint_msg_.name.resize(7);
     joint_msg_.position.resize(7);
     joint_msg_.velocity.resize(7);
+    joint_msg_.effort.resize(7);
     std::vector<std::string> joint_names;
     joint_names.push_back("joint_1");
     joint_names.push_back("joint_2");
@@ -37,7 +38,8 @@ int main(int argc, char **argv)
     joint_names.push_back("joint_7");
     joint_msg_.name = joint_names;
     
-    body_pose_publisher_ = n_node.advertise<geometry_msgs::Pose>("body_pose", 100);
+    body_pose_publisher_ = n_node.advertise<geometry_msgs::Pose>("body_pose", 100);    
+    wrench_publisher_ = n_node.advertise<geometry_msgs::Wrench>("arm/wrench", 100);   
 
     // Action Server
     joint_posture_action_server_ = std::make_unique<JointPostureActionServer>("/spot_kinova_action/joint_posture_control", n_node, ctrl_);
@@ -75,13 +77,24 @@ int main(int argc, char **argv)
 void publishJointState(){
     Vector7d q = ctrl_->state().kinova.q;
     Vector7d v = ctrl_->state().kinova.v;
+    Vector7d torque = ctrl_->state().kinova.torque;
+    Vector6d wrench = ctrl_->state().kinova.wrench;
     joint_msg_.header.stamp = ros::Time::now();
         
     for (int i=0; i<7; i++){
         joint_msg_.position[i] = q(i);
         joint_msg_.velocity[i] = v(i);
+        joint_msg_.effort[i] = torque(i);        
     }
+    wrench_msg_.force.x = wrench(0);
+    wrench_msg_.force.y = wrench(1);
+    wrench_msg_.force.z = wrench(2);
+    wrench_msg_.torque.x = wrench(3);
+    wrench_msg_.torque.y = wrench(4);
+    wrench_msg_.torque.z = wrench(5);
+
     joint_state_publisher_.publish(joint_msg_);
+    wrench_publisher_.publish(wrench_msg_);
 }
 
 void publishBodyPose(){

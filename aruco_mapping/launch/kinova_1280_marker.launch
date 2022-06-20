@@ -31,13 +31,16 @@
     <remap from="/image_raw" to="/camera/color/image_raw"/>
 
     <param name="calibration_file" type="string" value="$(find aruco_mapping)/data/kinova_hd.ini" /> 
-    <param name="num_of_markers" type="int" value="1" />
-    <param name="marker_size" type="double" value="0.05"/>
+    <param name="num_of_markers" type="int" value="5" />
+    <param name="marker_size" type="double" value="0.03"/>
     <param name="space_type" type="string" value="plane" />
     <param name="roi_allowed" type="bool" value="false" />
     <param name="view_image" type="bool" value="false" />
     <param name="marker_id_1" type="int" value="5"/>
-    <param name="marker_id_2" type="int" value="1"/>
+    <param name="marker_id_2" type="int" value="41"/>
+    <param name="marker_id_3" type="int" value="11"/>
+    <param name="marker_id_4" type="int" value="12"/>
+    <param name="marker_id_5" type="int" value="13"/>
     <param name="camera_frame_id" type="string" value="camera_color_frame"/>
 
     1
@@ -50,7 +53,7 @@
 
   </node>  
   
-  <node pkg="tf" type="static_transform_publisher" name="safe_marker" args="0 0 0 0 0 0 /marker5 /safe_link 40"/> 
+  <!-- <node pkg="tf" type="static_transform_publisher" name="safe_marker" args="0 0 0 0 0 0 /marker5 /safe_link 40"/>  -->
   
 </launch>
  

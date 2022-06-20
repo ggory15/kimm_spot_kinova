@@ -45,6 +45,59 @@ class ControlSuiteShell(cmd.Cmd):
         self.se3_array_ctrl_client = actionlib.SimpleActionClient('/spot_kinova_action/se3_array_control', spot_kinova_msgs.msg.SE3ArrayAction)
         self.se3_array_ctrl_client.wait_for_server()
 
+    
+    def do_open(self, arg):
+        'Open Gripper'
+        goal = spot_kinova_msgs.msg.GripperGoal
+        # goal.open = True
+        goal.position = 0.0
+
+        print ("action sent")
+        self.gripper_ctrl_client.send_goal(goal)
+        self.gripper_ctrl_client.wait_for_result()
+
+        if (self.gripper_ctrl_client.get_result()):
+            print ("action succeed")
+        else:
+            print ("action failed")
+        
+    def do_close(self, arg):
+        'Close Gripper'
+        goal = spot_kinova_msgs.msg.GripperGoal
+        # goal.open = False
+        goal.position = 1.0
+
+        print ("action sent")
+        self.gripper_ctrl_client.send_goal(goal)
+        self.gripper_ctrl_client.wait_for_result()
+
+        if (self.gripper_ctrl_client.get_result()):
+            print ("action succeed")
+        else:
+            print ("action failed")
+
+    def do_position(self, arg):
+        'position of Gripper'
+        goal = spot_kinova_msgs.msg.GripperGoal
+
+        # goal.open = False
+        if (arg >= 0.0 and arg <= 1.0):        
+            goal.position = arg
+
+            print ("action sent")
+            self.gripper_ctrl_client.send_goal(goal)
+            self.gripper_ctrl_client.wait_for_result()
+
+            if (self.gripper_ctrl_client.get_result()):
+                print ("action succeed")
+            else:
+                print ("action failed")
+                
+        else: 
+            print ("gripper position only valid between 0.0 - 1.0. try again") 
+    
+    
+    
     def do_qrpick(self, arg):
         goal = spot_kinova_msgs.msg.QRPickGoal
 
@@ -147,8 +200,8 @@ class ControlSuiteShell(cmd.Cmd):
         self.joint_ctrl_client.wait_for_result()
         if (self.joint_ctrl_client.get_result()):
             print ("action succeed")
-            self.do_body(True)
-            self.do_walk(True)
+            # self.do_body(True)
+            # self.do_walk(True)
 
         else:
             print ("action failed")

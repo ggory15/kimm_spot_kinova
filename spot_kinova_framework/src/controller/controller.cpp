@@ -44,6 +44,8 @@ namespace RobotController{
         state_.v.setZero(25);
         state_.kinova.q.setZero();
         state_.kinova.v.setZero();
+        state_.kinova.torque.setZero();
+        state_.kinova.wrench.setZero();
         state_.spot.body_tilted = false;
         state_.spot.orientation_publish = false;
 
@@ -124,19 +126,21 @@ namespace RobotController{
         }
     }
 
-    void SpotKinovaWrapper::kinova_update(){
+    void SpotKinovaWrapper::kinova_update(){        
         if (!issimulation_){
             if (!state_.kinova.lowlevel_ctrl){
                   base_feedback_ = base_cyclic_->RefreshFeedback();
                 for (int i=0; i<7; i++){
                     state_.kinova.q(i) = wrapRadiansFromMinusPiToPi(base_feedback_.actuators(i).position() * M_PI / 180.0);
                     state_.kinova.v(i) = base_feedback_.actuators(i).velocity() * M_PI / 180.0;
+                    state_.kinova.torque[i] = base_feedback_.actuators(i).torque(); //[Nm]                    
                 }
             }
             else{
                 for (int i=0; i<7; i++) {
                     state_.kinova.q(i) = wrapRadiansFromMinusPiToPi(base_feedback_.actuators(i).position() * M_PI / 180.0);
                     state_.kinova.v(i) = base_feedback_.actuators(i).velocity() * M_PI / 180.0;
+                    state_.kinova.torque[i] = base_feedback_.actuators(i).torque(); //[Nm]                    
                 }
             }
         }
@@ -147,6 +151,21 @@ namespace RobotController{
         tf_identity.setIdentity();
         tf_identity.translation() = state_.kinova.ee_offset;
         state_.kinova.H_ee = robot_->position(data_, robot_->model().getJointId("joint_7")) * tf_identity;
+
+        Data::Matrix6x robot_J_;
+        robot_J_.resize(6, 25);
+        robot_->jacobianWorld(data_, robot_->model().getJointId("joint_7"), robot_J_);
+        MatrixXd jacobian;
+        jacobian = robot_J_.bottomRightCorner(6, 7);
+        
+        Eigen::MatrixXd jacobian_transpose_pinv;
+        // pseudoInverse(jacobian.transpose(), jacobian_transpose_pinv); //pseudo_inversion.h  
+        // pseudoInverse(jacobian.transpose(), jacobian_transpose_pinv, 0.01);       //math_function.hpp
+        jacobian_transpose_pinv = jacobian.transpose().completeOrthogonalDecomposition().pseudoInverse();
+        // cout << "111" << endl;
+       
+        state_.kinova.wrench << jacobian_transpose_pinv * state_.kinova.torque;         
+        // state_.kinova.wrench << jacobian(0,0), jacobian(1,1), jacobian(2,2), jacobian_transpose_pinv(0,0),jacobian_transpose_pinv(0,0), jacobian_transpose_pinv(0,0);
     }
 
     void SpotKinovaWrapper::spot_update(Vector3d& x, tf::Quaternion& quat, tf::Quaternion& pose, tf::Quaternion& nav){
@@ -434,6 +453,17 @@ namespace RobotController{
         auto finger = gripper_command.mutable_gripper()->add_finger();
         finger->set_finger_identifier(1);
         finger->set_value(1.0f);
+        base_->SendGripperCommand(gripper_command);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        //std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+
+    void SpotKinovaWrapper::init_position_girpper(double position){
+        k_api::Base::GripperCommand gripper_command;
+        gripper_command.set_mode(k_api::Base::GRIPPER_POSITION);
+        auto finger = gripper_command.mutable_gripper()->add_finger();
+        finger->set_finger_identifier(1);
+        finger->set_value(position);
         base_->SendGripperCommand(gripper_command);
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         //std::this_thread::sleep_for(std::chrono::milliseconds(1000));

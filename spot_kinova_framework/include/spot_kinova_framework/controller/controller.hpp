@@ -30,6 +30,8 @@
 #include <kimm_spot_kinova/trajectories/trajectory_euclidian.hpp>
 #include <kimm_spot_kinova/trajectories/trajectory_se3.hpp>
 #include <kimm_spot_kinova/solver/solver_HQP_factory.hxx>
+// #include <spot_kinova_framework/utilities/pseudo_inversion.hpp>
+// #include <kimm_spot_kinova/utilities/math_functions.hpp>
 //#include <kimm_spot_kinova/solver/util.hpp>
 
 // Real Kinova
@@ -59,6 +61,8 @@ typedef struct Kinova_State {
     Vector7d v_des;
     Vector7d q_ref;
     Vector7d v_ref;
+    Vector7d torque;
+    Vector6d wrench;
     SE3 H_ee_ref;
     SE3 H_ee_init;
     SE3 H_ee;
@@ -113,6 +117,7 @@ namespace RobotController{
             void init_predefined_posture_ctrl(string & name);
             void init_open_gripper();
             void init_close_girpper();
+            void init_position_girpper(double position);
 
             State & state(){
                 return state_;

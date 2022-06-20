@@ -115,6 +115,9 @@ private:
   ros::Publisher marker_msg_pub_;
   ros::Publisher marker_msg_pub1_;
   ros::Publisher marker_msg_pub2_;
+  ros::Publisher marker_msg_pub3_;
+  ros::Publisher marker_msg_pub4_;
+  ros::Publisher marker_msg_pub5_;
 
   /** \brief Publisher of std::vector<double> message for tvec and rvec for lidar_camera_calibration*/
   ros::Publisher lidar_camera_calibration_rt;
@@ -139,6 +142,9 @@ private:
   bool view_image_;
   int marker_id_1_;
   int marker_id_2_;
+  int marker_id_3_;
+  int marker_id_4_;
+  int marker_id_5_;
   
   /** \brief Container holding MarkerInfo data about all detected markers */
   std::vector<MarkerInfo> markers_;

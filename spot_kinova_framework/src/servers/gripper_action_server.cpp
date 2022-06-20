@@ -16,11 +16,21 @@ void GripperActionServer::goalCallback()
     feedback_header_stamp_ = 0;
     goal_ = as_.acceptNewGoal();
 
-    if (goal_->open){
+    // if (goal_->open){
+    //   mu_->init_open_gripper();
+    // }
+    // else{
+    //   mu_->init_close_girpper();
+    // }
+    
+    if (goal_->position == 0.0){
       mu_->init_open_gripper();
     }
-    else{
+    else if (goal_->position == 1.0){
       mu_->init_close_girpper();
+    }
+    else{
+      mu_->init_position_girpper(goal_->position);
     }
 
     start_time_ = ros::Time::now();

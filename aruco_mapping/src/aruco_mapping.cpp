@@ -54,8 +54,11 @@ ArucoMapping::ArucoMapping(ros::NodeHandle *nh) :
   lowest_marker_id_(-1),                  // Lowest marker ID
   marker_counter_(0),                     // Reset marker counter
   closest_camera_index_(0),                // Reset closest camera index 
-  marker_id_1_(26),
-  marker_id_2_(1)
+  marker_id_1_(5),
+  marker_id_2_(41),
+  marker_id_3_(11),
+  marker_id_4_(12),
+  marker_id_5_(13)
   
 {
   double temp_marker_size;  
@@ -73,6 +76,9 @@ ArucoMapping::ArucoMapping(ros::NodeHandle *nh) :
   nh->getParam("/aruco_mapping/view_image",view_image_);
   nh->getParam("/aruco_mapping/marker_id_1", marker_id_1_);
   nh->getParam("/aruco_mapping/marker_id_2", marker_id_2_);
+  nh->getParam("/aruco_mapping/marker_id_3", marker_id_3_);
+  nh->getParam("/aruco_mapping/marker_id_4", marker_id_4_);
+  nh->getParam("/aruco_mapping/marker_id_5", marker_id_5_);
   nh->getParam("/aruco_mapping/camera_frame_id", camera_frame_id_);
      
   // Double to float conversion
@@ -94,6 +100,9 @@ ArucoMapping::ArucoMapping(ros::NodeHandle *nh) :
     ROS_INFO_STREAM("VIEW image: " << view_image_);
     ROS_INFO_STREAM("Marker ID 1 : " <<marker_id_1_);
     ROS_INFO_STREAM("Marker ID 2 : " <<marker_id_2_);
+    ROS_INFO_STREAM("Marker ID 3 : " <<marker_id_3_);
+    ROS_INFO_STREAM("Marker ID 4 : " <<marker_id_4_);
+    ROS_INFO_STREAM("Marker ID 5 : " <<marker_id_5_);
     ROS_INFO_STREAM("camera frame id: " << camera_frame_id_);
   }
     
@@ -102,6 +111,9 @@ ArucoMapping::ArucoMapping(ros::NodeHandle *nh) :
   marker_visualization_pub_ = nh->advertise<visualization_msgs::Marker>("aruco_markers",1);
   marker_msg_pub1_ = nh->advertise<geometry_msgs::Pose>("aruco_markers_pose1",1);
   marker_msg_pub2_ = nh->advertise<geometry_msgs::Pose>("aruco_markers_pose2",1);
+  marker_msg_pub3_ = nh->advertise<geometry_msgs::Pose>("aruco_markers_pose3",1);
+  marker_msg_pub4_ = nh->advertise<geometry_msgs::Pose>("aruco_markers_pose4",1);
+  marker_msg_pub5_ = nh->advertise<geometry_msgs::Pose>("aruco_markers_pose5",1);
   lidar_camera_calibration_rt = nh->advertise< lidar_camera_calibration::marker_6dof >("lidar_camera_calibration_rt",1);
 
   //Parse data from calibration file
@@ -304,7 +316,8 @@ bool ArucoMapping::processImage(cv::Mat input_image,cv::Mat output_image)
 
       tf::StampedTransform odom_to_marker;
       try{
-          listener_->lookupTransform("odom", "safe_link", ros::Time(0), odom_to_marker);
+          // listener_->lookupTransform("odom", "safe_link", ros::Time(0), odom_to_marker);
+          listener_->lookupTransform("odom", marker_frame_id, ros::Time(0), odom_to_marker);
 
           geometry_msgs::Pose odom_to_marker_msg;
           tf::poseTFToMsg(odom_to_marker, odom_to_marker_msg);
@@ -324,6 +337,51 @@ bool ArucoMapping::processImage(cv::Mat input_image,cv::Mat output_image)
           geometry_msgs::Pose odom_to_marker_msg;
           tf::poseTFToMsg(odom_to_marker, odom_to_marker_msg);
           marker_msg_pub2_.publish(odom_to_marker_msg);
+      }
+       catch (tf::TransformException &ex) {
+          continue;
+      }
+   }
+   if(marker_id_3_ == current_marker_id){
+      //  marker_msg_pub3_.publish(marker_pose_msg);
+      tf::StampedTransform odom_to_marker;
+
+      try{
+          listener_->lookupTransform("odom", marker_frame_id, ros::Time(0), odom_to_marker);
+
+          geometry_msgs::Pose odom_to_marker_msg;
+          tf::poseTFToMsg(odom_to_marker, odom_to_marker_msg);
+          marker_msg_pub3_.publish(odom_to_marker_msg);
+      }
+       catch (tf::TransformException &ex) {
+          continue;
+      }
+   }
+   if(marker_id_4_ == current_marker_id){
+      //  marker_msg_pub4_.publish(marker_pose_msg);
+      tf::StampedTransform odom_to_marker;
+
+      try{
+          listener_->lookupTransform("odom", marker_frame_id, ros::Time(0), odom_to_marker);
+
+          geometry_msgs::Pose odom_to_marker_msg;
+          tf::poseTFToMsg(odom_to_marker, odom_to_marker_msg);
+          marker_msg_pub4_.publish(odom_to_marker_msg);
+      }
+       catch (tf::TransformException &ex) {
+          continue;
+      }
+   }
+   if(marker_id_5_ == current_marker_id){
+      //  marker_msg_pub5_.publish(marker_pose_msg);
+      tf::StampedTransform odom_to_marker;
+
+      try{
+          listener_->lookupTransform("odom", marker_frame_id, ros::Time(0), odom_to_marker);
+
+          geometry_msgs::Pose odom_to_marker_msg;
+          tf::poseTFToMsg(odom_to_marker, odom_to_marker_msg);
+          marker_msg_pub5_.publish(odom_to_marker_msg);
       }
        catch (tf::TransformException &ex) {
           continue;

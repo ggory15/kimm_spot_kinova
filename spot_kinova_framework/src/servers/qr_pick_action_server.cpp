@@ -65,10 +65,20 @@ bool QRPickActionServer::compute(ros::Time ctime)
       target_tf = SE3(Eigen::Quaterniond(goal_->target_pose.orientation.w, goal_->target_pose.orientation.x, goal_->target_pose.orientation.y, goal_->target_pose.orientation.z).toRotationMatrix(),
                       Eigen::Vector3d(goal_->target_pose.position.x, goal_->target_pose.position.y, 0.0));
       mu_->state().kinova.H_ee_ref_array[0] = qr_tf_ * target_tf;
-      mu_->state().kinova.H_ee_ref_array[0].translation()(2) = mu_->state().kinova.H_ee.translation()(2);
+      mu_->state().kinova.H_ee_ref_array[0].translation()(2) = mu_->state().kinova.H_ee.translation()(2);            
+
+      //align qr marker tf to joint7 tf
+      Eigen::Matrix3d rot_offset; //[0 -1 0; 1 0 0; 0 0 1]
+      rot_offset.setZero();
+      rot_offset(0, 1) = -1.0;
+      rot_offset(1, 0) = 1.0;
+      rot_offset(2, 2) = 1.0;      
+      mu_->state().kinova.H_ee_ref_array[0].rotation() = mu_->state().kinova.H_ee_ref_array[0].rotation()*rot_offset;
+           
       target_tf = SE3(Eigen::Quaterniond(goal_->target_pose.orientation.w, goal_->target_pose.orientation.x, goal_->target_pose.orientation.y, goal_->target_pose.orientation.z).toRotationMatrix(),
                       Eigen::Vector3d(goal_->target_pose.position.x, goal_->target_pose.position.y, goal_->target_pose.position.z));
-      mu_->state().kinova.H_ee_ref_array[1] = qr_tf_ * target_tf;
+      mu_->state().kinova.H_ee_ref_array[1] = qr_tf_ * target_tf;      
+      mu_->state().kinova.H_ee_ref_array[1].rotation() = mu_->state().kinova.H_ee_ref_array[1].rotation()*rot_offset;
 
       for (int i=0; i<2; i++){
         mu_->state().kinova.duration_array[i] = goal_->duration;
@@ -115,4 +125,5 @@ void QRPickActionServer::qrCallback(const geometry_msgs::Pose::ConstPtr& msg){
 
     qr_tf_ = SE3(Eigen::Quaterniond(msg->orientation.w,  msg->orientation.x,  msg->orientation.y,  msg->orientation.z),
                  Eigen::Vector3d(msg->position.x, msg->position.y, msg->position.z));
+    
 }

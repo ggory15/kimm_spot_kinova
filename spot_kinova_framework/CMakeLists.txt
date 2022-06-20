@@ -78,6 +78,7 @@ SET(${PROJECT_NAME}_HEADERS
 
   include/spot_kinova_framework/utilities/cxxopts.hpp
   include/spot_kinova_framework/utilities/kinova_utilities.hpp
+  include/spot_kinova_framework/utilities/pseudo_inversion.hpp
 
   include/spot_kinova_framework/servers/action_server_base.hpp
   include/spot_kinova_framework/servers/joint_posture_action_server.hpp

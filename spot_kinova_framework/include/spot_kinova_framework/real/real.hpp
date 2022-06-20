@@ -11,6 +11,7 @@
 #include "tf/transform_datatypes.h"
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Wrench.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <move_base_msgs/MoveBaseActionResult.h>
 #include <champ_msgs/Pose.h>
@@ -39,8 +40,10 @@ using namespace Eigen;
 double time_;
 std::shared_ptr<RobotController::SpotKinovaWrapper> ctrl_;
 
+ros::Publisher wrench_publisher_;
 ros::Publisher joint_state_publisher_;
 ros::Publisher body_pose_publisher_;
+geometry_msgs::Wrench wrench_msg_;
 sensor_msgs::JointState joint_msg_;
 geometry_msgs::Pose pose_msg_;
 

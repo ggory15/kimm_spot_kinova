@@ -80,7 +80,7 @@ bool QRPickActionServer::compute(ros::Time ctime)
     }
     mu_->compute_se3_array_ctrl(ctime);
  
-    if (ctime.toSec() - start_time_.toSec() > goal_->duration * 1.0 +3.0){
+    if (ctime.toSec() - start_time_.toSec() > goal_->duration * 2.0 +3.0){
       setSucceeded();
       return true;
     }

@@ -62,7 +62,7 @@ void WalkActionServer::goalCallback()
         goal.target_pose.pose.orientation.z = quat_tmp.z();
         goal.target_pose.pose.orientation.w = quat_tmp.w();
 
-        goal.duration.data.sec = 10.0;
+        goal.duration.data.sec = 20.0;
         goal.precise_positioning = true;
         ac_->sendGoal(goal);
       }
@@ -78,7 +78,7 @@ void WalkActionServer::goalCallback()
         goal.target_pose.pose.orientation.z = goal_->target_pose.orientation.z;
         goal.target_pose.pose.orientation.w = goal_->target_pose.orientation.w;
 
-        goal.duration.data.sec = 10.0;
+        goal.duration.data.sec = 20.0;
         goal.precise_positioning = true;
         ac_->sendGoal(goal);
       }

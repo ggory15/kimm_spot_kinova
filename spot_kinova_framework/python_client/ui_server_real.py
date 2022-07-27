@@ -61,11 +61,6 @@ class UiCmdServer(ControlSuiteShell):
             'navigate_to' : self.do_navigate_to,
             'test_mech_pnp' : self.do_test_mech_pnp,
             'test_box_pick' : self.do_test_box_pick,
-            'test_plant1_table_to_tray' : self.do_test_plant1_table_to_tray,
-            'test_plant1_tray_to_table' : self.do_test_plant1_tray_to_table,
-            'test_plant2_table_to_tray' : self.do_test_plant2_table_to_tray,
-            'test_plant2_tray_to_table' : self.do_test_plant2_tray_to_table,
-            'test_full_mech' : self.do_test_full_mech,
             
             #TODO : arm
             'armup' : self.do_armup,
@@ -81,15 +76,7 @@ class UiCmdServer(ControlSuiteShell):
 
             #New Navigation
             'save_goals' : self.do_save_goals,
-            'load_goals' : self.do_load_goals,
-            'walk_to_goal' : self.do_walk_to_goal,
-            'add_goals_from_odom': self.do_add_goals_from_odom,
-            'remove_goal' : self.do_remove_goal,
-            'clear_goals' : self.do_clear_goals,
-
-            #Plant Mission
-            'test_tray_pick' : self.do_test_tray_pick,
-            'test_tray_place' : self.do_test_tray_place
+            'load_goals' : self.do_load_goals
         }
                
     def handle_cmd_string(self, req):
@@ -97,10 +84,7 @@ class UiCmdServer(ControlSuiteShell):
         print('request : ', req.command)
         print('argument: ', req.arg,'\n')
         
-        if req.command == 'walk_to_goal' or req.command == 'add_goals_from_odom' or req.command == 'remove_goal':
-            self.functions[req.command](req.arg)
-        else:
-            self.functions[req.command](int(req.arg))
+        self.functions[req.command](int(req.arg))
         
         return UiCmdResponse(
             success=True,

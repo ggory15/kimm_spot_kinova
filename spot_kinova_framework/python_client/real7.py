@@ -15,7 +15,6 @@ import threading
 import cmd, sys, os
 import copy
 import time
-import math
 
 from nav_msgs.msg import Odometry
 import json
@@ -72,8 +71,7 @@ class ControlSuiteShell(cmd.Cmd):
         self.issucceed = True
 
         self.mech_pose = Pose()
-        self.iscallback_mech = False 
-        self.isgoodpose = False                   
+        self.iscallback_mech = False        
         self.mech_call_pub = rospy.Publisher('/mech_call', String, queue_size=10)
         rospy.Subscriber('mechmind_publisher/pose', Pose, self.mechmind_pose_callback)
         
@@ -199,9 +197,7 @@ class ControlSuiteShell(cmd.Cmd):
     #########################################################################################################################    
     def do_mechcall(self, arg):
         'call the pose from the mechmind with designated object label'
-        
-        self.isgoodpose = False
-        
+
         object_number = int(arg)
         
         if(object_number >= 0 and object_number < 11):
@@ -216,20 +212,9 @@ class ControlSuiteShell(cmd.Cmd):
     def mechmind_pose_callback(self, msg):
         self.mech_pose = msg
         self.iscallback_mech = True
-        
+
+        print ("pose received, do mechqrpick!")
         print(self.mech_pose)      
-
-        if (self.mech_pose.position.x > 0.18 or self.mech_pose.position.x < 0.0):
-            print ("target object's x position is not suitable to grasp")                
-            self.isgoodpose = False            
-
-        elif (math.fabs(self.mech_pose.position.y) < 0.1 or math.fabs(self.mech_pose.position.y) > 0.22):
-            print ("target object's y position is not suitable to grasp")
-            self.isgoodpose = False            
-
-        else:
-            print ("pose received, do mechqrpick!")
-            self.isgoodpose = True
     
     def qr1_callback(self, msg):
         if (not self.qr1_flag):
@@ -281,7 +266,7 @@ class ControlSuiteShell(cmd.Cmd):
     #########################################################################################################################                    
     
     ################################################## object pnp ###########################################################                    
-    def do_arm_mechpose(self, arg): #not used for now
+    def do_arm_mechpose(self, arg):
         'Go to the up position for mechcall'
 
         self.issucceed = False
@@ -289,7 +274,7 @@ class ControlSuiteShell(cmd.Cmd):
         goal = spot_kinova_msgs.msg.JointPostureGoal
         goal.duration = 5.0
         goal.target_joints = JointState()        
-        goal.target_joints.position = np.array([0.0, -2.18, 3.14, -2.443, 0, 1.83, 1.57])        
+        goal.target_joints.position = np.array([0.0, -2.4, 3.14, -2.443, 0, 1.7, 1.57])
 
         print ("action sent")
         self.joint_ctrl_client.send_goal(goal)
@@ -977,7 +962,7 @@ class ControlSuiteShell(cmd.Cmd):
     ########################################## kinova predefined motion #####################################################
     #########################################################################################################################
     def do_preready(self, arg):
-        'Go to the preready position using predefined posture ctrl'
+        'Go to the home position using predefined posture ctrl'
         goal = spot_kinova_msgs.msg.PredefinedPostureGoal
         goal.posture_name = "Ready"
 
@@ -990,7 +975,7 @@ class ControlSuiteShell(cmd.Cmd):
             print ("action failed")
 
     def do_preapproach(self, arg):
-        'Go to the preapproach position using predefined posture ctrl'
+        'Go to the home position using predefined posture ctrl'
         goal = spot_kinova_msgs.msg.PredefinedPostureGoal
         goal.posture_name = "Approach"
 
@@ -1016,22 +1001,9 @@ class ControlSuiteShell(cmd.Cmd):
             print ("action failed")
 
     def do_prefold(self, arg):
-        'Go to the prefold position using predefined posture ctrl'
+        'Go to the home position using predefined posture ctrl'
         goal = spot_kinova_msgs.msg.PredefinedPostureGoal
         goal.posture_name = "NewTurnOff"
-
-        print ("action sent")
-        self.predefined_posture_ctrl_client.send_goal(goal)
-        self.predefined_posture_ctrl_client.wait_for_result()
-        if (self.predefined_posture_ctrl_client.get_result()):
-            print ("action succeed")
-        else:
-            print ("action failed")
-
-    def do_premechpose(self, arg):
-        'Go to the mechpose position using predefined posture ctrl'
-        goal = spot_kinova_msgs.msg.PredefinedPostureGoal
-        goal.posture_name = "mechpose"
 
         print ("action sent")
         self.predefined_posture_ctrl_client.send_goal(goal)
@@ -1126,43 +1098,31 @@ class ControlSuiteShell(cmd.Cmd):
 
     #########################################################################################################################
     ################################################## sequneces ############################################################
-    #########################################################################################################################
-    def do_test_full_mech(self, arg):
-        self.do_walk_to_goal('mech')
-        self.do_test_mech_pnp(6)
-
+    #########################################################################################################################    
     def do_test_mech_pnp(self, arg):    
         if (self.issucceed):
-            # self.do_arm_mechpose(arg)              #fold arm for mech recognition
-            self.do_premechpose(arg)
+            self.do_arm_mechpose(arg)              #fold arm for mech recognition
         if (self.issucceed):
             self.do_mechcall(arg)                  #designated number (arg) object recognition
         if (self.issucceed):
-            self.do_position(0)                    #place the object
-        if (self.issucceed):
             self.do_preready(arg)                  #designated number (arg) object recognition
-
-        if(self.isgoodpose):
-            if (self.issucceed):
-                time.sleep(5)                      #wait before qr recogintion
-                self.do_qr1save(arg)               #save qr1 pose
-            if (self.issucceed):
-                self.do_position(50)               #open gripper for object picking        
-            if (self.issucceed):
-                self.do_mechqrpick(arg)            #pick the object w.r.t marker 5 (qr1)    
-            if (self.issucceed):
-                self.do_position(95)               #grasp the object
-            if (self.issucceed):
-                self.do_pickup(arg)                #pick up the object        
-            if (self.issucceed):
-                self.do_gotobox(arg)               #go to box to place object
-            if (self.issucceed):
-                self.do_position(50)               #place the object
-            if (self.issucceed):
-                self.do_preready(arg)              #go to preready
-            print ("pick and place with mechmind sequence test succeed")  
-        else:
-            print ("mech pnp is finished")  
+        if (self.issucceed):
+            self.do_qr1save(arg)                   #save qr1 pose
+        if (self.issucceed):
+            self.do_position(50)                   #open gripper for object picking        
+        if (self.issucceed):
+            self.do_mechqrpick(arg)                #pick the object w.r.t marker 5 (qr1)    
+        if (self.issucceed):
+            self.do_position(95)                   #grasp the object
+        if (self.issucceed):
+            self.do_pickup(arg)                    #pick up the object        
+        if (self.issucceed):
+            self.do_gotobox(arg)                   #go to box to place object
+        if (self.issucceed):
+            self.do_position(50)                   #place the object
+        if (self.issucceed):
+            self.do_preready(arg)                  #go to preready
+        print ("pick and place with mechmind sequence test succeed")  
 
     def do_test_box_pick(self, arg):    
         if (self.issucceed):

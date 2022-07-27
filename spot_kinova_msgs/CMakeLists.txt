@@ -31,6 +31,11 @@ add_action_files(DIRECTORY action FILES
   SE3Array.action
 )
 
+add_service_files(
+  FILES
+  UiCmd.srv
+)
+
 # add_service_files(
 #   FILES
 #   IdleControl.srv

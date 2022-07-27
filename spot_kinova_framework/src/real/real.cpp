@@ -117,14 +117,21 @@ void publishBodyPose(){
 }
 
 void bodyStateCallback(const nav_msgs::Odometry::ConstPtr& msg){
-    
-    x_(0) = msg->pose.pose.position.x;
-    x_(1) = msg->pose.pose.position.y;
-    x_(2) = msg->pose.pose.position.z;
+    if (start_flag_){
+        x_prev_(0) = msg->pose.pose.position.x;
+        x_prev_(1) = msg->pose.pose.position.y;
+        x_prev_(2) = msg->pose.pose.position.z;
+    }
+
+    x_(0) = lpf(0.1, msg->pose.pose.position.x, x_prev_(0), 100);
+    x_(1) = lpf(0.1, msg->pose.pose.position.y, x_prev_(1), 100);
+    x_(2) = lpf(0.1, msg->pose.pose.position.z, x_prev_(2), 100);
  
     quat_res_ = tf::Quaternion(msg->pose.pose.orientation.x, msg->pose.pose.orientation.y, msg->pose.pose.orientation.z, msg->pose.pose.orientation.w);
 
-    ctrl_->spot_update(x_, quat_res_, quat1_, quat2_); // todo: quat_res (global quaternion), quat1 (global nav2d), quat2 (body pose)
+    ctrl_->spot_update(x_, quat_res_, quat1_,  quat2_); // todo: quat_res (global quaternion), quat1 (global nav2d), quat2 (body pose)    
+
+    x_prev_ = x_;
 }
 void cmdPoseCallback(const spot_msgs::MobilityParams::ConstPtr& msg){
     quat1_ = tf::Quaternion(msg->body_control.orientation.x, msg->body_control.orientation.y, msg->body_control.orientation.z, msg->body_control.orientation.w);

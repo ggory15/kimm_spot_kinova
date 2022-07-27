@@ -1,0 +1,5 @@
+string command
+string arg
+---
+bool success 
+string message

@@ -45,80 +45,19 @@ class ControlSuiteShell(cmd.Cmd):
         self.se3_array_ctrl_client = actionlib.SimpleActionClient('/spot_kinova_action/se3_array_control', spot_kinova_msgs.msg.SE3ArrayAction)
         self.se3_array_ctrl_client.wait_for_server()
 
-    
-    def do_open(self, arg):
-        'Open Gripper'
-        goal = spot_kinova_msgs.msg.GripperGoal
-        # goal.open = True
-        goal.position = 0.0
-
-        print ("action sent")
-        self.gripper_ctrl_client.send_goal(goal)
-        self.gripper_ctrl_client.wait_for_result()
-
-        if (self.gripper_ctrl_client.get_result()):
-            print ("action succeed")
-        else:
-            print ("action failed")
-        
-    def do_close(self, arg):
-        'Close Gripper'
-        goal = spot_kinova_msgs.msg.GripperGoal
-        # goal.open = False
-        goal.position = 1.0
-
-        print ("action sent")
-        self.gripper_ctrl_client.send_goal(goal)
-        self.gripper_ctrl_client.wait_for_result()
-
-        if (self.gripper_ctrl_client.get_result()):
-            print ("action succeed")
-        else:
-            print ("action failed")
-
-    def do_position(self, arg):
-        'position of Gripper'
-        goal = spot_kinova_msgs.msg.GripperGoal
-
-        # goal.open = False
-        if (arg >= 0.0 and arg <= 1.0):        
-            goal.position = arg
-
-            print ("action sent")
-            self.gripper_ctrl_client.send_goal(goal)
-            self.gripper_ctrl_client.wait_for_result()
-
-            if (self.gripper_ctrl_client.get_result()):
-                print ("action succeed")
-            else:
-                print ("action failed")
-                
-        else: 
-            print ("gripper position only valid between 0.0 - 1.0. try again") 
-    
-    
-    
     def do_qrpick(self, arg):
         goal = spot_kinova_msgs.msg.QRPickGoal
 
-        qr_pose= Pose()
-        qr_pose.position.x = 0.9
-        qr_pose.position.y = 0.1
-        qr_pose.position.z = 0.5
-        qr_pose.orientation.x =  0.0
-        qr_pose.orientation.y = 0
-        qr_pose.orientation.z = 0
-        qr_pose.orientation.w = 1
-        goal.qr_pose = qr_pose
-
+        goal.topic_name = "qr_target_pose"
         goal.target_pose = Pose()
-        goal.target_pose.position.x = 0.0
+
+        goal.target_pose.position.x = 0.2
         goal.target_pose.position.y = 0.1
         goal.target_pose.position.z = 0.0
         goal.target_pose.orientation.x =  0.0
         goal.target_pose.orientation.y = 0
-        goal.target_pose.orientation.z = 0
-        goal.target_pose.orientation.w = 1
+        goal.target_pose.orientation.z = 0.707
+        goal.target_pose.orientation.w = 0.707
 
         goal.duration = 3.0
         print ("action sent")
@@ -208,8 +147,8 @@ class ControlSuiteShell(cmd.Cmd):
         self.joint_ctrl_client.wait_for_result()
         if (self.joint_ctrl_client.get_result()):
             print ("action succeed")
-            # self.do_body(True)
-            # self.do_walk(True)
+            self.do_body(True)
+            self.do_walk(True)
 
         else:
             print ("action failed")

@@ -70,7 +70,7 @@ void WalkActionServer::goalCallback()
        
         goal.target_pose.pose.position.x = goal_->target_pose.position.x;
         goal.target_pose.pose.position.y = goal_->target_pose.position.y;
-        goal.target_pose.pose.position.z = 0.0;
+        goal.target_pose.pose.position.z = goal_->target_pose.position.z;
 
 
         goal.target_pose.pose.orientation.x = goal_->target_pose.orientation.x;

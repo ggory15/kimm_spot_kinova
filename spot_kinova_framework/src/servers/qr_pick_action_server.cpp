@@ -53,9 +53,10 @@ bool QRPickActionServer::compute(ros::Time ctime)
       qr_tf_ = SE3(Eigen::Quaterniond(goal_->qr_pose.orientation.w, goal_->qr_pose.orientation.x, goal_->qr_pose.orientation.y, goal_->qr_pose.orientation.z).toRotationMatrix(),
                       Eigen::Vector3d(goal_->qr_pose.position.x, goal_->qr_pose.position.y, goal_->qr_pose.position.z));
       target_tf = SE3(Eigen::Quaterniond(goal_->target_pose.orientation.w, goal_->target_pose.orientation.x, goal_->target_pose.orientation.y, goal_->target_pose.orientation.z).toRotationMatrix(),
-                      Eigen::Vector3d(goal_->target_pose.position.x, goal_->target_pose.position.y, 0.0));
+                      Eigen::Vector3d(goal_->target_pose.position.x, goal_->target_pose.position.y, goal_->target_pose.position.z + goal_->approach_offset));
       mu_->state().kinova.H_ee_ref_array[0] = qr_tf_ * target_tf;
-      mu_->state().kinova.H_ee_ref_array[0].translation()(2) = mu_->state().kinova.H_ee.translation()(2);            
+      
+      // mu_->state().kinova.H_ee_ref_array[0].translation()(2) = mu_->state().kinova.H_ee.translation()(2);                  
 
       //align qr marker tf to joint7 tf
       Eigen::Matrix3d rot_offset; //[0 -1 0; 1 0 0; 0 0 1]

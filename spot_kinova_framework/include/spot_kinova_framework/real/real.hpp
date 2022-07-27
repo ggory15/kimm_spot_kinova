@@ -9,6 +9,7 @@
 #include "sensor_msgs/JointState.h"
 #include "geometry_msgs/Transform.h"
 #include "tf/transform_datatypes.h"
+#include <tf/transform_listener.h>
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Wrench.h>
@@ -52,8 +53,10 @@ ros::Subscriber body_state_subscriber_;
 
 Vector3d odom_pos_;
 tf::Quaternion quat1_, quat2_, body_quat_, quat_res_;
-Vector3d x_;
+Vector3d x_, x_prev_, x_lpf_;
+
 SE3 action_walk_tf_;
+bool start_flag_{true};
 
 std::unique_ptr<JointPostureActionServer> joint_posture_action_server_;
 std::unique_ptr<SE3ActionServer> se3_action_server_;
@@ -71,6 +74,10 @@ void bodyStateCallback(const nav_msgs::Odometry::ConstPtr& msg);
 void cmdPoseCallback(const spot_msgs::MobilityParams::ConstPtr& msg);
 void publishJointState();
 void publishBodyPose();
+double lpf(double time, double y, double y_last, double cutoff){
+    double gain = time / (time + (1.0 / (2.0 * 3.141592 * cutoff)));
+    return gain * y + (1-gain) * y_last;
+};
 
 
 

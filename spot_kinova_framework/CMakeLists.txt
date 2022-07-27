@@ -26,6 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
   hardware_interface
   pluginlib
   realtime_tools
+  tf
   roscpp
   rospy
   roslib

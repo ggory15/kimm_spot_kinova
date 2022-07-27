@@ -1,6 +1,5 @@
 # Define the goal
-#bool open
-float32 position
+bool open
 ---
 # Define the result
 bool is_completed

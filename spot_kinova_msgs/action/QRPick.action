@@ -1,5 +1,5 @@
 # Define the goal
-geometry_msgs/Pose qr_pose
+string topic_name
 geometry_msgs/Pose target_pose
 float32 duration
 #bool relative

@@ -1,4 +1,6 @@
-<launch>   
+<launch>    
+    <!-- <include file="$(find spot_driver)/launch/driver.launch"/> -->
+
     <param name="robot_group" type="string" value=""/>
     <param name="issimulation" type="bool" value="false"/>
 

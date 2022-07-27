@@ -119,9 +119,7 @@ ArucoMapping::ArucoMapping(ros::NodeHandle *nh) :
   //Parse data from calibration file
   parseCalibrationFile(calib_filename_);
 
-  //Initialize OpenCV windowrosto
-  cv::namedWindow("Mono8", cv::WINDOW_AUTOSIZE);       
-      
+     
   //Resize marker container
   markers_.resize(num_of_markers_);
   
@@ -227,6 +225,8 @@ ArucoMapping::imageCallback(const sensor_msgs::ImageConstPtr &original_image)
   // Show image
   if (view_image_)
   {
+    //Initialize OpenCV windowrosto
+    cv::namedWindow("Mono8", cv::WINDOW_AUTOSIZE);       
     cv::imshow("Mono8", I);
     cv::waitKey(10);
   }
@@ -317,7 +317,8 @@ bool ArucoMapping::processImage(cv::Mat input_image,cv::Mat output_image)
       tf::StampedTransform odom_to_marker;
       try{
           // listener_->lookupTransform("odom", "safe_link", ros::Time(0), odom_to_marker);
-          listener_->lookupTransform("odom", marker_frame_id, ros::Time(0), odom_to_marker);
+          //listener_->lookupTransform("odom", marker_frame_id, ros::Time(0), odom_to_marker);
+          listener_->lookupTransform("vision", marker_frame_id, ros::Time(0), odom_to_marker);
 
           geometry_msgs::Pose odom_to_marker_msg;
           tf::poseTFToMsg(odom_to_marker, odom_to_marker_msg);
@@ -332,7 +333,8 @@ bool ArucoMapping::processImage(cv::Mat input_image,cv::Mat output_image)
       tf::StampedTransform odom_to_marker;
 
       try{
-          listener_->lookupTransform("odom", marker_frame_id, ros::Time(0), odom_to_marker);
+          //listener_->lookupTransform("odom", marker_frame_id, ros::Time(0), odom_to_marker);
+          listener_->lookupTransform("vision", marker_frame_id, ros::Time(0), odom_to_marker);
 
           geometry_msgs::Pose odom_to_marker_msg;
           tf::poseTFToMsg(odom_to_marker, odom_to_marker_msg);
@@ -347,7 +349,8 @@ bool ArucoMapping::processImage(cv::Mat input_image,cv::Mat output_image)
       tf::StampedTransform odom_to_marker;
 
       try{
-          listener_->lookupTransform("odom", marker_frame_id, ros::Time(0), odom_to_marker);
+          //listener_->lookupTransform("odom", marker_frame_id, ros::Time(0), odom_to_marker);
+          listener_->lookupTransform("vision", marker_frame_id, ros::Time(0), odom_to_marker);
 
           geometry_msgs::Pose odom_to_marker_msg;
           tf::poseTFToMsg(odom_to_marker, odom_to_marker_msg);
@@ -358,11 +361,12 @@ bool ArucoMapping::processImage(cv::Mat input_image,cv::Mat output_image)
       }
    }
    if(marker_id_4_ == current_marker_id){
-      //  marker_msg_pub4_.publish(marker_pose_msg);
+      //marker_msg_pub4_.publish(marker_pose_msg);
       tf::StampedTransform odom_to_marker;
 
       try{
-          listener_->lookupTransform("odom", marker_frame_id, ros::Time(0), odom_to_marker);
+        //listener_->lookupTransform("odom", marker_frame_id, ros::Time(0), odom_to_marker);
+          listener_->lookupTransform("vision", marker_frame_id, ros::Time(0), odom_to_marker);
 
           geometry_msgs::Pose odom_to_marker_msg;
           tf::poseTFToMsg(odom_to_marker, odom_to_marker_msg);
@@ -377,7 +381,8 @@ bool ArucoMapping::processImage(cv::Mat input_image,cv::Mat output_image)
       tf::StampedTransform odom_to_marker;
 
       try{
-          listener_->lookupTransform("odom", marker_frame_id, ros::Time(0), odom_to_marker);
+//          listener_->lookupTransform("odom", marker_frame_id, ros::Time(0), odom_to_marker);
+          listener_->lookupTransform("vision", marker_frame_id, ros::Time(0), odom_to_marker);
 
           geometry_msgs::Pose odom_to_marker_msg;
           tf::poseTFToMsg(odom_to_marker, odom_to_marker_msg);

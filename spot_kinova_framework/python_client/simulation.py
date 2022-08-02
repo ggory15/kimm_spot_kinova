@@ -156,7 +156,7 @@ class ControlSuiteShell(cmd.Cmd):
     def do_ready(self, arg):
         'Go to the folding position using joint posture ctrl'
         goal = spot_kinova_msgs.msg.JointPostureGoal
-        goal.duration = 0.5
+        goal.duration = 2.0
         goal.target_joints = JointState()
         goal.target_joints.position = np.array([0.0, -90.0, 180.0, -90.0, 0, -90.0, 90.0]) * 3.14/180.0
 

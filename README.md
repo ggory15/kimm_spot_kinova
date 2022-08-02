@@ -1,5 +1,5 @@
 # KIMM_SPOT_KINOVA PROJECT
-IMPORTANT: This package is optimized on Ubuntu 18.04 with ROS-melodic and Python 3
+IMPORTANT: This package is optimized on Ubuntu 18.04 with ROS-noetic and Python 3
 
 
 ## Packages
@@ -27,8 +27,8 @@ And you can easily move the simulation foler. (Type cd $spot_kinova)
 ### For Ros with Python3
 ```
 sudo apt install python3-pip python3-all-dev python3-rospkg
-sudo apt install ros-melodic-desktop-full --fix-missing
-sudo apt install ros-melodic-pinocchio 
+sudo apt install ros-noetic-desktop-full --fix-missing
+sudo apt install ros-noetic-pinocchio 
 sudo rm /etc/ros/rosdep/sources.list.d/ -R
 sudo -H pip3 install rosdep
 sudo rosdep init
@@ -47,11 +47,11 @@ catkin_make --cmake-args -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin
 
 ### For Champ
 ```
-sudo apt install ros-melodic-hector-sensors-description
-sudo apt install ros-melodic-robot-localization
-sudo apt install ros-melodic-move-base ros-melodic-effort-controllers
-sudo apt install ros-melodic-gmapping ros-melodic-amcl
-sudo apt install ros-melodic-ecl-license
+sudo apt install ros-noetic-hector-sensors-description
+sudo apt install ros-noetic-robot-localization
+sudo apt install ros-noetic-move-base ros-noetic-effort-controllers
+sudo apt install ros-noetic-gmapping ros-noetic-amcl
+sudo apt install ros-noetic-ecl-license
 git clone https://github.com/chvmp/champ --recursive
 git clone https://github.com/chvmp/champ_teleop --recursive
 cd ..
@@ -66,20 +66,20 @@ sudo pip3 install pyyaml -U
 
 ### For Aruco
 ```
-sudo apt install ros-melodic-aruco
+sudo apt install ros-noetic-aruco
 ```
 
 ### For Kinova-RBDL
 ```
 sudo apt install gstreamer1.0-tools gstreamer1.0-libav libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-good1.0-dev gstreamer1.0-plugins-good gstreamer1.0-plugins-base
-sudo apt-get install ros-melodic-rgbd-launch
+sudo apt-get install ros-noetic-rgbd-launch
 git clone https://github.com/Kinovarobotics/ros_kortex_vision --recursive
 catkin_make --cmake-args -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.6m -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.6m.so.1.0
 ```
 
 ### For MechMind
 ```
-sudo apt install ros-melodic-rosbridge-server
+sudo apt install ros-noetic-rosbridge-server
 catkin_make --cmake-args -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.6m -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.6m.so.1.0
 ```
 

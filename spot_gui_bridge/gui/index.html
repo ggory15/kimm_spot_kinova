@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Spot-Kinova Control UI</title>
+
+<link rel="stylesheet" href="css/bootstrap/bootstrap.css">
+<link rel="stylesheet" href="css/spot_gui/spot_gui.css">
+
+<script type="text/javascript" src="js/roslibjs/roslib.min.js"></script>
+<script type="text/javascript" src="js/jquery/jquery-3.6.0.js"></script>
+<script type="text/javascript" src="js/popper/popper.js"></script>
+<script type="text/javascript" src="js/bootstrap/bootstrap.bundle.js"></script>
+<!-- <script type="text/javascript" src="js/nipplejs/nipplejs.js"></script> -->
+<!-- <script type="text/javascript" src="js/spot_gui/spot_ros.js"></script> -->
+<!-- <script type="text/javascript" src="js/spot_gui/include_html.js"></script> -->
+
+<!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.7.3/nipplejs.js"></script> -->
+<style>
+
+video {
+  object-fit: cover; 
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+}
+
+.yshin-box { width: 100%; height: 100%; overflow: hidden;margin: 0px auto; position: relative; }
+.yshin-text { position: absolute; top: 70%; width: 100%; }
+.yshin-text p { margin-top: -24px; text-align: center; font-size: 48px; color: #ffffff; }
+.yshin-button p { position: absolute; top: 70%; width: 100%; }
+.btn-space {
+    margin-right: 20px;
+}
+.btn-xl {
+    padding: 15px 30px;
+    font-size: 24px;
+    border-radius: 12px;
+    margin-top: 12px;
+}
+
+</style>
+
+</head>
+  
+  <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
+    <!-- <div class="container-fluid"> -->
+      <a class="navbar-brand" href="index.html">Spot-Kinova</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="index.html">Home <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="simulation.html">Simulation</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="real.html">Real Robot</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="mission.html">Mission</a>
+          </li>
+        </ul>
+      </div>
+    <!-- </div> -->
+  </nav>
+
+  <video autoplay muted loop>    
+    <source src="videos/background.mp4#t=4" type="video/mp4">
+  </video>
+  
+  <div class="yshin-text text-center">
+    <a class="btn btn-xl btn-secondary btn-space" href="simulation.html" role="button">Simulation</a>
+    <a class="btn btn-xl btn-secondary btn-space" href="real.html" role="button">Real Robot</a>
+    <a class="btn btn-xl btn-secondary btn-space" href="mission.html" role="button">Mission</a>
+  </div>
+
+<!-- <script>
+  includeHTML();
+</script> -->
+
+</body>
+</html>

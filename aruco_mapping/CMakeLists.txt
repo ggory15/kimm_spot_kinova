@@ -43,5 +43,9 @@ add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS} aruco_mapping_gencpp )
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} ${aruco_LIBS} ${ROS_LIBRARIES} ${catkin_LIBRARIES})
 
+add_executable(aruco_mapping_spot ${SOURCES} ${HEADERS})
+add_dependencies(aruco_mapping_spot ${catkin_EXPORTED_TARGETS} aruco_mapping_gencpp )
+target_link_libraries(aruco_mapping_spot ${OpenCV_LIBS} ${aruco_LIBS} ${ROS_LIBRARIES} ${catkin_LIBRARIES})
+
 
  

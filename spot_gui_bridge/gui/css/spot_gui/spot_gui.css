@@ -1,0 +1,13 @@
+.jumbotron-image {
+  background-image: url('../../images/jumbotronBackground.jpg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: white;
+  color: dark;
+}
+
+.spot-card-image-size {
+  width: 50%;
+  height: auto;
+}

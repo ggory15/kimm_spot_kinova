@@ -49,7 +49,8 @@ ArucoMapping::ArucoMapping(ros::NodeHandle *nh) :
   calib_filename_("empty"),               // Calibration filepath
   space_type_ ("plane"),                  // Space type - 2D plane 
   roi_allowed_ (false),                   // ROI not allowed by default
-  view_image_ (false),
+  view_image_kinova_ (false),
+  view_image_spot_ (false),
   first_marker_detected_(false),          // First marker not detected by defualt
   lowest_marker_id_(-1),                  // Lowest marker ID
   marker_counter_(0),                     // Reset marker counter
@@ -58,7 +59,8 @@ ArucoMapping::ArucoMapping(ros::NodeHandle *nh) :
   marker_id_2_(41),
   marker_id_3_(11),
   marker_id_4_(12),
-  marker_id_5_(13)
+  marker_id_5_(13),
+  marker_id_6_(42)
   
 {
   double temp_marker_size;  
@@ -73,12 +75,14 @@ ArucoMapping::ArucoMapping(ros::NodeHandle *nh) :
   nh->getParam("/aruco_mapping/roi_y",roi_y_);
   nh->getParam("/aruco_mapping/roi_w",roi_w_);
   nh->getParam("/aruco_mapping/roi_h",roi_h_);
-  nh->getParam("/aruco_mapping/view_image",view_image_);
+  nh->getParam("/aruco_mapping/view_image_kinova",view_image_kinova_);
+  nh->getParam("/aruco_mapping/view_image_spot",view_image_spot_);
   nh->getParam("/aruco_mapping/marker_id_1", marker_id_1_);
   nh->getParam("/aruco_mapping/marker_id_2", marker_id_2_);
   nh->getParam("/aruco_mapping/marker_id_3", marker_id_3_);
   nh->getParam("/aruco_mapping/marker_id_4", marker_id_4_);
   nh->getParam("/aruco_mapping/marker_id_5", marker_id_5_);
+  nh->getParam("/aruco_mapping/marker_id_6", marker_id_6_);
   nh->getParam("/aruco_mapping/camera_frame_id", camera_frame_id_);
      
   // Double to float conversion
@@ -97,12 +101,14 @@ ArucoMapping::ArucoMapping(ros::NodeHandle *nh) :
     ROS_INFO_STREAM("ROI y-coor: " << roi_x_);
     ROS_INFO_STREAM("ROI width: "  << roi_w_);
     ROS_INFO_STREAM("ROI height: " << roi_h_);      
-    ROS_INFO_STREAM("VIEW image: " << view_image_);
+    ROS_INFO_STREAM("VIEW image_kinova: " << view_image_kinova_);
+    ROS_INFO_STREAM("VIEW image_spot: " << view_image_spot_);
     ROS_INFO_STREAM("Marker ID 1 : " <<marker_id_1_);
     ROS_INFO_STREAM("Marker ID 2 : " <<marker_id_2_);
     ROS_INFO_STREAM("Marker ID 3 : " <<marker_id_3_);
     ROS_INFO_STREAM("Marker ID 4 : " <<marker_id_4_);
     ROS_INFO_STREAM("Marker ID 5 : " <<marker_id_5_);
+    ROS_INFO_STREAM("Marker ID 6 : " <<marker_id_6_);
     ROS_INFO_STREAM("camera frame id: " << camera_frame_id_);
   }
     
@@ -114,6 +120,7 @@ ArucoMapping::ArucoMapping(ros::NodeHandle *nh) :
   marker_msg_pub3_ = nh->advertise<geometry_msgs::Pose>("aruco_markers_pose3",1);
   marker_msg_pub4_ = nh->advertise<geometry_msgs::Pose>("aruco_markers_pose4",1);
   marker_msg_pub5_ = nh->advertise<geometry_msgs::Pose>("aruco_markers_pose5",1);
+  marker_msg_pub6_ = nh->advertise<geometry_msgs::Pose>("aruco_markers_pose6",1);
   lidar_camera_calibration_rt = nh->advertise< lidar_camera_calibration::marker_6dof >("lidar_camera_calibration_rt",1);
 
   //Parse data from calibration file
@@ -223,11 +230,18 @@ ArucoMapping::imageCallback(const sensor_msgs::ImageConstPtr &original_image)
   processImage(I,I);
   
   // Show image
-  if (view_image_)
+  if (view_image_kinova_)
   {
     //Initialize OpenCV windowrosto
     cv::namedWindow("Mono8", cv::WINDOW_AUTOSIZE);       
     cv::imshow("Mono8", I);
+    cv::waitKey(10);
+  }
+  if (view_image_spot_)
+  {
+    //Initialize OpenCV windowrosto
+    cv::namedWindow("Mono9", cv::WINDOW_AUTOSIZE);       
+    cv::imshow("Mono9", I);
     cv::waitKey(10);
   }
   /*cv::waitKey(2000);
@@ -381,7 +395,7 @@ bool ArucoMapping::processImage(cv::Mat input_image,cv::Mat output_image)
       tf::StampedTransform odom_to_marker;
 
       try{
-//          listener_->lookupTransform("odom", marker_frame_id, ros::Time(0), odom_to_marker);
+        //listener_->lookupTransform("odom", marker_frame_id, ros::Time(0), odom_to_marker);
           listener_->lookupTransform("vision", marker_frame_id, ros::Time(0), odom_to_marker);
 
           geometry_msgs::Pose odom_to_marker_msg;
@@ -392,8 +406,22 @@ bool ArucoMapping::processImage(cv::Mat input_image,cv::Mat output_image)
           continue;
       }
    }
-    
-    
+   if(marker_id_6_ == current_marker_id){
+      //  marker_msg_pub6_.publish(marker_pose_msg);
+      tf::StampedTransform odom_to_marker;
+
+      try{
+        //listener_->lookupTransform("odom", marker_frame_id, ros::Time(0), odom_to_marker);
+          listener_->lookupTransform("vision", marker_frame_id, ros::Time(0), odom_to_marker);
+
+          geometry_msgs::Pose odom_to_marker_msg;
+          tf::poseTFToMsg(odom_to_marker, odom_to_marker_msg);
+          marker_msg_pub6_.publish(odom_to_marker_msg);
+      }
+       catch (tf::TransformException &ex) {
+          continue;
+      }
+   }        
   }
 
   marker_r_and_t.dof.data.clear();

@@ -1,0 +1,25 @@
+<div class="card-header" id="headingOne">
+  <h2 class="mb-0">
+    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+      Simple Control Panel
+    </button>
+  </h2>
+</div>
+<div id="collapseOne" class="collapse show multi-collapse pl-3 pt-3" aria-labelledby="headingOne">
+  <h5>Simple ROS Joystick</h5>
+  <br>
+
+  <div class="row">
+    <div class="col-12 col-md-4 px-3 py-3" style="min-height: 12rem;" id="con_status">
+        <p>Connection status: <span id="status"></span></p>
+        <!-- <p>Last /txt_msg received: <span id="msg"></span></p> -->
+    </div>
+
+    <div class="col-12 col-md-4 px-3 py-3" style="min-height: 8rem;">
+      <div class="zone static" id="zone_joystick"></div>
+    </div>
+
+    <div class="col-12 col-md-4" style="min-height: 1rem;"></div>
+
+  </div>
+</div>

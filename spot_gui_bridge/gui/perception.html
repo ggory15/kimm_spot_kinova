@@ -1,0 +1,105 @@
+<div class="card-header" id="headingTwo">
+  <h2 class="mb-0">
+    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+      Perception
+    </button>
+  </h2>
+</div>
+
+<div id="collapseTwo" class="collapse show multi-collapse" aria-labelledby="headingTwo">
+  <div class="row pl-4 pr-4 pt-3 pb-3">
+
+    <div class="col-6 col-md-3 m-0">
+      <div class="card text-center mb-3">
+        <div class="card-body">
+          <h7 class="card-title">Request object pose</h7>
+          <p>
+            <img src="images/mechcall.png" class="card-img-top spot-card-image-size">
+          </p>
+          <button class="btn btn-primary btn-block" data-toggle="modal" data-target="#mechCallModal">Run</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3 m-0">
+      <div class="card text-center mb-3">
+        <div class="card-body">
+          <h7 class="card-title">QR Save</h7>
+          <p>
+            <img src="images/save.png" class="card-img-top spot-card-image-size">
+          </p>
+          <button class="btn btn-primary btn-block" data-toggle="modal" data-target="#qrSaveModal">Run</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="mechCallModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="mechCallModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="mechCallModalLabel">Select object id</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form name="mechcallForm">
+            <div class="modal-body">
+              <div class="form-row align-items-center">
+                <select class="form-control form-control-sm" name="mechcallSelect">
+                  <option selected>Select object id...</option>
+                  <option value="0">object 0</option>
+                  <option value="1">object 1</option>
+                  <option value="2">object 2</option>
+                  <option value="3">object 3</option>
+                  <option value="4">object 4</option>
+                  <option value="5">object 5</option>
+                  <option value="6">object 6</option>
+                  <option value="7">object 7</option>
+                  <option value="8">object 8</option>
+                  <option value="9">object 9</option>
+                  <option value="10">object 10</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button onclick="simple_cmd_with_val('mechcall', mechcallSelect.value)" type="button" class="btn btn-primary" data-dismiss="modal">Run</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="qrSaveModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="qrSaveModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="qrSaveModalLabel">Select object id</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form name="qrSaveForm">
+            <div class="modal-body">
+              <div class="form-row align-items-center">
+                <select class="form-control form-control-sm" name="qrSaveSelect">
+                  <option selected>Select QR code id...</option>
+                  <option value="qr1save">QR-Code 1</option>
+                  <option value="qr2save">QR-Code 2</option>
+                  <option value="qr3save">QR-Code 3</option>
+                  <option value="qr4save">QR-Code 4</option>
+                  <option value="qr5save">QR-Code 5</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button onclick="simple_cmd(qrSaveSelect.value)" type="button" class="btn btn-primary" data-dismiss="modal">Run</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>

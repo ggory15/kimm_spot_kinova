@@ -27,19 +27,23 @@
     <param name="framerate" value="30" />
  </node>  -->
   <!-- ArUco mapping -->
-  <node pkg="aruco_mapping" type="aruco_mapping" name="aruco_mapping" output="screen">
+  <node pkg="aruco_mapping" type="aruco_mapping_spot" name="aruco_mapping_spot" output="screen">
     <remap from="/image_raw" to="/spot/camera/frontleft/image"/>
 
     <param name="calibration_file" type="string" value="$(find aruco_mapping)/data/spot_frontleft.ini" /> 
-    <param name="num_of_markers" type="int" value="1" />
-    <param name="marker_size" type="double" value="0.175"/>
+    <param name="num_of_markers" type="int" value="6" />
+    <param name="marker_size" type="double" value="0.03"/>
     <param name="space_type" type="string" value="plane" />
     <param name="roi_allowed" type="bool" value="false" />
-    <param name="view_image" type="bool" value="true" />
-    <param name="marker_id_1" type="int" value="20"/>
-    <param name="marker_id_2" type="int" value="1"/>
+    <param name="view_image_spot" type="bool" value="true" />
+    <param name="marker_id_1" type="int" value="5"/>
+    <param name="marker_id_2" type="int" value="41"/>
+    <param name="marker_id_3" type="int" value="11"/>
+    <param name="marker_id_4" type="int" value="12"/>
+    <param name="marker_id_5" type="int" value="13"/>
+    <param name="marker_id_6" type="int" value="42"/>
     <param name="camera_frame_id" type="string" value="frontleft_fisheye"/>
-    1
+    
     <!--
     <param name="roi_x" type="int" value="0" /> 
     <param name="roi_y" type="int" value="0" />
@@ -49,7 +53,7 @@
 
   </node>  
   
-  <node pkg="tf" type="static_transform_publisher" name="safe_marker" args="0 0 0.6 1.57 1.57 0 /marker20 /safe_link 40"/> 
+  <!-- <node pkg="tf" type="static_transform_publisher" name="safe_marker" args="0 0 0.6 1.57 1.57 0 /marker20 /safe_link 40"/>  -->
   
 </launch>
  

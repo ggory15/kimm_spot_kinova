@@ -1,0 +1,268 @@
+<div class="card-header" id="headingFour">
+  <h2 class="mb-0">
+    <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseFour" aria-expanded="true" aria-controls="collapseFour">
+      Navigation
+    </button>
+  </h2>
+</div>
+
+<div id="collapseFour" class="collapse multi-collapse" aria-labelledby="headingFour" data-parent="#accordionExample">
+
+  <div class="row pl-4 pr-4 pt-3 pb-3">
+
+    <div class="col-6 col-md-3 m-0">
+      <div class="card text-center mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Load Goal Poses</h5>
+          <p>
+            <img src="images/upload.png" class="card-img-top spot-card-image-size">
+          </p>
+          <button onclick="simple_cmd('load_goals')" class="btn btn-primary btn-block">Run</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3 m-0">
+      <div class="card text-center mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Save Goal Poses</h5>
+          <p>
+            <img src="images/download.png" class="card-img-top spot-card-image-size">
+          </p>
+          <button onclick="simple_cmd('save_goals')" class="btn btn-primary btn-block">Run</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3 m-0">
+      <div class="card text-center mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Add Goals</h5>
+          <p>
+            <img src="images/add.png" class="card-img-top spot-card-image-size">
+          </p>
+          <button class="btn btn-primary btn-block" data-toggle="modal" data-target="#addGoalModal">Run</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3 m-0">
+      <div class="card text-center mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Remove Goals</h5>
+          <p>
+            <img src="images/remove.png" class="card-img-top spot-card-image-size">
+          </p>
+          <button class="btn btn-primary btn-block" data-toggle="modal" data-target="#removeGoalModal">Run</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3 m-0">
+      <div class="card text-center mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Navigate To</h5>
+          <p>
+            <img src="images/navigate.png" class="card-img-top spot-card-image-size">
+          </p>
+          <button class="btn btn-primary btn-block" data-toggle="modal" data-target="#navigateToModal">Run</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3 m-0">
+      <div class="card text-center mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Walk Onestep</h5>
+          <p>
+            <img src="images/walk.png" class="card-img-top spot-card-image-size">
+          </p>
+          <button onclick="simple_cmd('walk_onestep')" class="btn btn-primary btn-block">Run</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3 m-0">
+      <div class="card text-center mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Clear Goals</h5>
+          <p>
+            <img src="images/clear.png" class="card-img-top spot-card-image-size">
+          </p>
+          <button onclick="simple_cmd('clear_goals')" class="btn btn-primary btn-block">Run</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- <div class="col-6 col-md-3 m-0">
+      <div class="card text-center mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Start Recording</h5>
+          <p>
+            <img src="images/record.png" class="card-img-top spot-card-image-size">
+          </p>
+          <button onclick="simple_cmd('start_recording')" class="btn btn-primary btn-block">Run</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3 m-0">
+      <div class="card text-center mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Stop Recording</h5>
+          <p>
+            <img src="images/stop.png" class="card-img-top spot-card-image-size">
+          </p>
+          <button onclick="simple_cmd('stop_recording')" class="btn btn-primary btn-block">Run</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3 m-0">
+      <div class="card text-center mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Clear Keyframe</h5>
+          <p>
+            <img src="images/clear.png" class="card-img-top spot-card-image-size">
+          </p>
+          <button onclick="simple_cmd('clear_graph')" class="btn btn-primary btn-block">Run</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3 m-0">
+      <div class="card text-center mb-3">
+        <div class="card-body">
+          <h5 class="card-title">List Keyframe</h5>
+          <p>
+            <img src="images/list.png" class="card-img-top spot-card-image-size">
+          </p>
+          <button onclick="simple_cmd('list_graph')" class="btn btn-primary btn-block">Run</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3 m-0">
+      <div class="card text-center mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Pose Initialize</h5>
+          <p>
+            <img src="images/init.png" class="card-img-top spot-card-image-size">
+          </p>
+          <button onclick="simple_cmd('set_localization_fiducial')" class="btn btn-primary btn-block">Run</button>
+        </div>
+      </div>
+    </div> -->
+
+
+
+
+    <div class="modal fade" id="addGoalModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="addGoalModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addGoalModalLabel">Select Goal</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form name="addGoalForm">
+            <div class="modal-body">
+              <div class="form-row align-items-center">
+                <select class="form-control form-control-sm" name="addGoalSelect">
+                  <option selected>Select Goal</option>
+                  <option value="home">Home</option>
+                  <option value="plant">Plant</option>
+                  <option value="tray">Tray</option>
+                  <option value="mech">Mech</option>
+                  <option value="box">Box</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button onclick="simple_cmd_with_val('add_goals_from_odom', addGoalSelect.value)" type="button" class="btn btn-primary" data-dismiss="modal">Run</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="removeGoalModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="removeGoalModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="removeGoalModalLabel">Select Goal</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form name="removeGoalForm">
+            <div class="modal-body">
+              <div class="form-row align-items-center">
+                <select class="form-control form-control-sm" name="removeGoalSelect">
+                  <option selected>Select Goal</option>
+                  <option value="home">Home</option>
+                  <option value="plant">Plant</option>
+                  <option value="tray">Tray</option>
+                  <option value="mech">Mech</option>
+                  <option value="box">Box</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button onclick="simple_cmd_with_val('remove_goal', removeGoalSelect.value)" type="button" class="btn btn-primary" data-dismiss="modal">Run</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="modal fade" id="navigateToModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="navigateToModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="navigateToModalLabel">Select Goal</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form name="navigateToForm">
+            <div class="modal-body">
+              <div class="form-row align-items-center">
+                <select class="form-control form-control-sm" name="navigateToSelect">
+                  <option selected>Select Goal</option>
+                  <option value="home">Home</option>
+                  <option value="plant">Plant</option>
+                  <option value="tray">Tray</option>
+                  <option value="mech">Mech</option>
+                  <option value="box">Box</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button onclick="simple_cmd_with_val('walk_to_goal', navigateToSelect.value)" type="button" class="btn btn-primary" data-dismiss="modal">Run</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- <div class="col-6 col-md-3 m-0">
+      <div class="card text-center mb-3">
+        <div class="card-body">
+          <h5 class="card-title">QR Walk</h5>
+          <p>
+            <img src="images/qrpick.png" class="card-img-top spot-card-image-size">
+          </p>
+          <a href="#" class="btn btn-primary btn-block">Run</a>
+        </div>
+      </div>
+    </div> -->
+
+  </div>
+
+</div>
